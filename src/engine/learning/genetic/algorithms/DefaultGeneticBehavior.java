@@ -2,6 +2,7 @@ package engine.learning.genetic.algorithms;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import engine.learning.NeuralNetwork;
 
@@ -9,8 +10,10 @@ import engine.learning.genetic.GeneticBehavior;
 import engine.learning.genetic.SelectiveFunction;
 import engine.learning.genetic.GeneticInformation;
 
-import engine.learning.genetic.utils.UniformGenerator;
 import engine.learning.genetic.utils.MutationGenerator;
+
+import engine.utils.Pair;
+import engine.utils.UniformGenerator;
 
 import engine.math.Matrix;
 
@@ -65,21 +68,25 @@ public class DefaultGeneticBehavior implements GeneticBehavior
     @Override
     public GeneticInformation crossover()
     {
-        Pair<Double, NeuralNetwork> p1 = random();
-        Pair<Double, NeuralNetwork> p2 = random();
+        Pair<Double, GeneticInformation> p1 = random();
+        Pair<Double, GeneticInformation> p2 = random();
+        NeuralNetwork n1 = (NeuralNetwork) p1.getValue();
+        NeuralNetwork n2 = (NeuralNetwork) p2.getValue();
+
         double total = p1.getKey() + p2.getKey();
         double probabilityP1 = p1.getKey() / total;
-        NeuralNetwork network = new NeuralNetwork(p1.layers());
+        NeuralNetwork network = new NeuralNetwork(n1.layers());
+
         for (int i = 0; i < network.size(); ++i)
         {
             Matrix matrix = network.get(i);
             for (int j = 0; j < matrix.size(); ++j)
-                matrix.set(i, random.next() < probabilityP1 ? p1.get(i).get(j) : p2.get(i).get(j));
+                matrix.set(i, random.next() < probabilityP1 ? n1.get(i).get(j) : n2.get(i).get(j));
         }
         return network;
     }
 
-    public Pair<Double, NeuralNetwork> random()
+    public Pair<Double, GeneticInformation> random()
     {
         int index = 0;
         double choice = random.next();

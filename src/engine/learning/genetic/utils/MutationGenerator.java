@@ -1,18 +1,15 @@
 package engine.learning.genetic.utils;
 
+import engine.math.Matrix;
+
 import engine.utils.Generator;
 import engine.utils.UniformGenerator;
 import engine.utils.GaussianGenerator;
 
-public class MutationGenerator implements Generator<Matrix.Map>
+public abstract class MutationGenerator implements Generator<Matrix.Map>
 {
-    public final static MutationGenerator UNIFORM = new MutationGenerator()
+    public final static MutationGenerator UNIFORM = new MutationGenerator(new UniformGenerator())
     {
-        public MutationGenerator()
-        {
-            super(new UniformGenerator());
-        }
-
         @Override
         public Matrix.Map next()
         {
@@ -22,13 +19,8 @@ public class MutationGenerator implements Generator<Matrix.Map>
         }
     };
 
-    public final static MutationGenerator GAUSSIAN = new MutationGenerator()
+    public final static MutationGenerator GAUSSIAN = new MutationGenerator(new GaussianGenerator())
     {
-        public MutationGenerator()
-        {
-            super(new GaussianGenerator());
-        }
-
         @Override
         public Matrix.Map next()
         {

@@ -31,7 +31,8 @@ public class NeuralNetwork implements GeneticInformation
     @Override
     public double[] get(double[] input)
     {
-        return get(Matrix.from(input)).toArray(new double[output.size()]);
+        Matrix output = get(Matrix.from(input));
+        return output.toArray(new double[output.size()]);
     }
 
     public Matrix get(Matrix output)
@@ -55,9 +56,9 @@ public class NeuralNetwork implements GeneticInformation
     public int[] layers()
     {
         int[] layers = new int[weights.length + 1];
-        layers[0] = weights[0].height();
+        layers[0] = weights[0].getHeight();
         for (int i = 0; i < weights.length; ++i)
-            layers[i + 1] = weights[i].width();
+            layers[i + 1] = weights[i].getWidth();
         return layers;
     }
 
