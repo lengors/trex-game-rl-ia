@@ -48,6 +48,7 @@ public class DefaultGeneticBehavior implements GeneticBehavior
     @Override
     public GeneticInformation crossover()
     {
+        // TODO: implement crossover based on reward function (SelectiveFunction)
         return null;
     }
 }
