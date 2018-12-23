@@ -42,9 +42,23 @@ public class NeuralNetwork implements GeneticInformation
         return output;
     }
 
+    public Matrix get(int i)
+    {
+        return weights[i];
+    }
+
     public Matrix[] get()
     {
         return weights;
+    }
+
+    public int[] layers()
+    {
+        int[] layers = new int[weights.length + 1];
+        layers[0] = weights[0].height();
+        for (int i = 0; i < weights.length; ++i)
+            layers[i + 1] = weights[i].width();
+        return layers;
     }
 
     public NeuralNetwork map(Matrix.Map map)
@@ -52,5 +66,10 @@ public class NeuralNetwork implements GeneticInformation
         for (Matrix matrix : weights)
             matrix.map(map);
         return this;
+    }
+
+    public int size()
+    {
+        return weights.length;
     }
 }

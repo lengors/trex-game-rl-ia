@@ -103,6 +103,21 @@ public class Matrix
         return this;
     }
 
+    public double get(int i)
+    {
+        return data[i];
+    }
+
+    public int getHeight()
+    {
+        return height;
+    }
+
+    public int getWidth()
+    {
+        return width;
+    }
+
     public Matrix map(Map mapFunction)
     {
         for (int i = 0; i < data.length; ++i)
@@ -121,6 +136,12 @@ public class Matrix
     {
         for (int i = 0; i < data.length; )
             data[i++] *= scalar;
+        return this;
+    }
+
+    public Matrix set(int i, double value)
+    {
+        data[i] = value;
         return this;
     }
 
