@@ -33,9 +33,16 @@ public class DefaultGeneticBehavior implements GeneticBehavior
     @Override
     public void select(GeneticInformation[] generation, SelectiveFunction function)
     {
+        double total = 0;
         this.generation.clear();
         for (GeneticInformation information : generation)
-            this.generation.add(new Pair<>(function.fitness(information), information));
+        {
+            double fitness = function.fitness(information);
+            this.generation.add(new Pair<>(fitness, information));
+            total += fitness;
+        }
+        for (Pair<Double, GeneticInformation> pair : this.generation)
+            pair.setKey(pair.getKey() / total);
         Collections.sort(this.generation, (Pair<Double, GeneticInformation> p1, Pair<Double, GeneticInformation> p2) ->
         {
             if (p1.getKey() < p2.getKey())
