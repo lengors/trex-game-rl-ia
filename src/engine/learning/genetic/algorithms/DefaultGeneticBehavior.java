@@ -1,8 +1,7 @@
 package engine.learning.genetic.algorithms;
 
-import java.util.Map;
-import java.util.Random;
-import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import engine.learning.NeuralNetwork;
 
@@ -12,9 +11,13 @@ import engine.learning.genetic.GeneticInformation;
 
 import engine.learning.genetic.utils.MutationGenerator;
 
+import engine.math.Matrix;
+
+import engine.utils.Pair;
+
 public class DefaultGeneticBehavior implements GeneticBehavior
 {
-    private Map<Double, GeneticInformation> generation = new HashMap<>();
+    private List<Pair<Double, GeneticInformation>> generation = new ArrayList<>();
     private MutationGenerator generator;
 
     public DefaultGeneticBehavior(MutationGenerator generator)
@@ -32,7 +35,15 @@ public class DefaultGeneticBehavior implements GeneticBehavior
     {
         this.generation.clear();
         for (GeneticInformation information : generation)
-            this.generation.put(function.fitness(information), information);
+            this.generation.add(new Pair<>(function.fitness(information), information));
+        Collections.sort(this.generation, (Pair<Double, GeneticInformation> p1, Pair<Double, GeneticInformation> p2) ->
+        {
+            if (p1.getKey() < p2.getKey())
+                return -1;
+            if (p1.getKey() > p2.getKey())
+                return 1;
+            return 0;
+        });
     }
 
     @Override
@@ -48,7 +59,14 @@ public class DefaultGeneticBehavior implements GeneticBehavior
     @Override
     public GeneticInformation crossover()
     {
-        // TODO: implement crossover based on reward function (SelectiveFunction)
-        return null;
+        Pair<Double, NeuralNetwork> p1 = random();
+        Pair<Double, NeuralNetwork> p2 = random();
+        NeuralNetwork network = new NeuralNetwork(layers);
+        for (Matrix matrix : network.get())
+            matrix.map((double weight) ->
+            {
+                return weight;
+            });
+        return network;
     }
 }

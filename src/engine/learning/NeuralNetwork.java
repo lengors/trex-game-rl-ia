@@ -12,7 +12,9 @@ public class NeuralNetwork implements GeneticInformation
     public NeuralNetwork(Matrix.Map activationFunction, int... layers)
     {
         this.activationFunction = activationFunction;
-        // TODO: randomly initialize weights
+        weights = new Matrix[layers.length - 1];
+        for (int i = 0; i < weights.length; ++i)
+            weights[i] = new Matrix(layers[i + 1], layers[i] + 1);
     }
     
     public NeuralNetwork(int... layers)
@@ -23,23 +25,32 @@ public class NeuralNetwork implements GeneticInformation
     @Override
     public double[][] get(double[][] input)
     {
-        Matrix output = Matrix.from(input).addRow(1);
-        for (Matrix matrix : weights)
-            output.dot(matrix).map(activationFunction).addRow(1);
-        return output.toArray();
+        return get(Matrix.from(input)).toArray();
     }
 
     @Override
     public double[] get(double[] input)
     {
-        Matrix output = Matrix.from(input);
+        return get(Matrix.from(input)).toArray(new double[output.size()]);
+    }
+
+    public Matrix get(Matrix output)
+    {
+        output.addRow(1);
         for (Matrix matrix : weights)
-            output.dot(matrix).map(activationFunction).addRow(1);
-        return output.toArray(new double[output.size()]);
+            output = Matrix.dot(matrix, output).map(activationFunction).addRow(1);
+        return output;
     }
 
     public Matrix[] get()
     {
         return weights;
+    }
+
+    public NeuralNetwork map(Matrix.Map map)
+    {
+        for (Matrix matrix : weights)
+            matrix.map(map);
+        return this;
     }
 }
