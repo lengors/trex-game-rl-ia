@@ -28,13 +28,13 @@ if sys.platform == 'win32':
                 os.environ['PATH'] += os.pathsep + os.path.dirname(path)
 
 if len(sys.argv) >= 2:
-    if sys.argv[1] == '-compile' and len(sys.argv) == 2:
+    if sys.argv[1] == '--compile' and len(sys.argv) == 2:
         delete('bin')
         os.mkdir('bin')
         dependencies = os.pathsep.join(find(os.path.join('res', 'dependencies'), '.+\.jar'))
         call = [ 'javac', '-cp', dependencies, '-d', 'bin' ] + find('src', '.+\.java')
-        subprocess.call(call, shell = True)
-    elif sys.argv[1] == '-run' and len(sys.argv) == 3:
+        subprocess.call(call, shell = sys.platform == 'win32')
+    elif sys.argv[1] == '--run' and len(sys.argv) == 3:
         dependencies = os.pathsep.join(find(os.path.join('res', 'dependencies'), '.+\.jar'))
         dependencies = 'bin{}{}'.format(os.pathsep, dependencies)
         subprocess.call([ 'java', '-cp', dependencies, sys.argv[2] ])
