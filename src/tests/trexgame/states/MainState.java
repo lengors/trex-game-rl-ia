@@ -1,12 +1,19 @@
 package tests.trexgame.states;
 
-import engine.GameState;
+import java.util.List;
+
+import engine.base.Game;
+import engine.base.GameState;
 
 import engine.ecs.Observer;
 import engine.ecs.Observable;
 
+import tests.trexgame.objects.obstacles.Obstacle;
+
 public class MainState extends GameState implements Observer
 {
+    private double gameSpeed;
+
     @Override
     public void onUnregister()
     {
@@ -22,7 +29,7 @@ public class MainState extends GameState implements Observer
     @Override
     public void onEnter()
     {
-
+        gameSpeed = 6;
     }
 
     @Override
@@ -34,8 +41,7 @@ public class MainState extends GameState implements Observer
     @Override
     public void onChange(Observable observable)
     {
-        // if (observable.getChange() == TrexState.JUMP)
-        // 
+
     }
 
     @Override
@@ -53,6 +59,11 @@ public class MainState extends GameState implements Observer
     @Override
     public String onRun()
     {
+        List<Obstacle> obstacles = getGame().getObjects(Obstacle.class);
+        while (obstacles.size() < 2)
+            getGame().addObject(Obstacle.random());
         
+        
+        return getName();
     }
 }

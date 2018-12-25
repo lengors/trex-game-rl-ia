@@ -1,16 +1,79 @@
-package engine;
+package engine.base;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Game implements Runnable
 {
     private Map<String, GameState> gameStates = new HashMap<>();
+    private List<GameObject> gameObjects = new ArrayList<>();
+
+    private GameState gameState;
     private String initialState;
     private Thread thread;
+
+    public Game addObject(GameObject gameObject)
+    {
+        gameObjects.add(gameObject);
+        return this;
+    }
+
+    public GameObject getObject(int index)
+    {
+        return gameObjects.get(index);
+    }
+
+    public int getObjectCount()
+    {
+        return gameObjects.size();
+    }
+
+    public <T extends GameObject> T getObject(Class<T> objectClass, int index)
+    {
+        for (GameObject gameObject : gameObjects)
+            if (gameObject.getClass().isAssignableFrom(objectClass))
+            {
+                if (index == 0)
+                    return (T) gameObject;
+                else
+                    index -= 1;
+            }
+        return null;
+    }
+
+    public <T extends GameObject> T getObject(Class<T> objectClass)
+    {
+        return getObject(objectClass, 0);
+    }
+
+    public List<GameObject> getObjects()
+    {
+        return new ArrayList<>(gameObjects);
+    }
+
+    public <T extends GameObject> List<T> getObjects(Class<T> objectClass)
+    {
+        List<T> objects = new ArrayList<>();
+        for (GameObject gameObject : gameObjects)
+            if (gameObject.getClass().isAssignableFrom(objectClass))
+                objects.add((T) gameObject);
+        return objects;
+    }
+
+    public boolean removeObject(GameObject gameObject)
+    {
+        return gameObjects.remove(gameObject);
+    }
+
+    public GameObject removeObject(int index)
+    {
+        return gameObjects.remove(index);
+    }
 
     public void join()
     {
@@ -63,7 +126,7 @@ public class Game implements Runnable
     public void run()
     {
         String stateName = initialState;
-        GameState gameState = get(stateName, null);
+        gameState = get(stateName, null);
         while (gameState != null)
         {
             stateName = gameState.onRun();

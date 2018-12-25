@@ -1,6 +1,6 @@
 package tests.trexgame.states;
 
-import engine.GameState;
+import engine.base.GameState;
 
 import engine.ecs.Observer;
 import engine.ecs.Observable;
@@ -36,8 +36,7 @@ public class LostState extends GameState implements Observer
     @Override
     public void onChange(Observable observable)
     {
-        // if (TrexState.JUMP == observable.getChange())
-        //    toReturn = MainState.class.getSimpleName();
+        // observable.getChange();
     }
 
     @Override
