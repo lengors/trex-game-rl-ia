@@ -39,6 +39,6 @@ if len(sys.argv) >= 2:
         dependencies = 'bin{}{}'.format(os.pathsep, dependencies)
         subprocess.call([ 'java', '-cp', dependencies, sys.argv[2] ])
     else:
-        print('Usage: python[3] java.py [-run classname | -compile]')
+        print('Usage: python[3] java.py [--run classname | --compile]')
 else:
-    print('Usage: python[3] java.py [-run classname | -compile]')
+    print('Usage: python[3] java.py [--run classname | --compile]')
