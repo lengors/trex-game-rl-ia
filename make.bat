@@ -13,9 +13,11 @@ set PATH=%PATH%;%JAVAC_PATH%
 
 :main
 dir /s /b src\*.java > sources
+dir /s /b res\dependencies\*.jar > dependencies
 if exist bin rmdir /S /Q bin
 mkdir bin
-javac -d bin @sources
+javac -cp @dependencies -d bin @sources
+del dependencies
 del sources
 goto end
 
