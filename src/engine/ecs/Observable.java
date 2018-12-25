@@ -7,6 +7,11 @@ public class Observable
 {
     private Set<Observer> observers = new TreeSet<>();
 
+    public Set<Observer> getObservers()
+    {
+        return observers;
+    }
+
     public Observable register(Observer observer)
     {
         observers.add(observer);

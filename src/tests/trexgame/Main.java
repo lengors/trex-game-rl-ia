@@ -1,26 +1,44 @@
 package tests.trexgame;
 
+import java.awt.event.KeyEvent;
+
+import engine.ecs.Observer;
+import engine.ecs.Observable;
+
 import engine.graphics.Window;
 
 public class Main extends Window
 {
-    private List<MeshObject> meshObjects;
+    private Observable observable;
+    private Renderer renderer;
+    private Trex player;
+    private Game game;
 
     @Override
     public void setup()
     {
         smooth();
-        Observer.register(meshObjects, gameObjects);
+
+        // game = Game.build(TrexGame.class);
+        // renderer = game.getRenderer();
+        // player = game.make();
     }
 
     @Override
     public void draw()
     {
-        background(255);
+        // renderer.render(this);
     }
 
-    public static main(String[] args)
+    @Override
+    public void keyPressed()
     {
-        Window window = Window.build(Main.class);
+        for (Observer observer : observable.getObservers())
+            observer.onChange(observable);
+    }
+
+    public static void main(String[] args)
+    {
+        Window window = Window.build(Main.class, 400, 400);
     }    
 }
