@@ -27,6 +27,10 @@ public class Main extends Window
             new PVector(1, 0), new PVector(-1, 0), new PVector(0, 1), new PVector(0, -1)
         };
         openedPositions.add(initialPosition);
+
+        int minX, maxX, minY, maxY;
+        minX = maxX = minY = maxY = -1;
+
         while (openedPositions.size() > 0)
         {
             PVector vector = openedPositions.remove(0);
@@ -35,13 +39,50 @@ public class Main extends Window
             if (x >= 0 && y >= 0 && x < image.width && y < image.height)
             {
                 int c = image.get(x, y);
-                if (c != color(64, 202, 201))
+                if (red(c) != 64 || green(c) != 202 || blue(c) != 201)
                 {
                     positions.add(vector);
                     for (PVector direction : directions)
-                        openedPositions.add(PVector.add(vector, direction));
+                    {
+                        PVector newPosition = PVector.add(vector, direction);
+                        if (!positions.contains(newPosition) && !openedPositions.contains(newPosition))
+                            openedPositions.add(newPosition);
+                    }
+                    if (minX == -1 || minX > x)
+                        minX = x;
+                    if (maxX == -1 || maxX < x)
+                        maxX = x;
+                    if (minY == -1 || minY > y)
+                        minY = y;
+                    if (maxY == -1 || maxY < y)
+                        maxY = y;
                 }
             }
+        }
+        if (positions.size() != 0)
+        {
+            int width = maxX - minX + 1;
+            int height = maxY - minY + 1;
+            PImage newImage = createImage(width, height, ARGB);
+            newImage.loadPixels();
+            for (int i = 0; i < newImage.pixels.length; )
+                newImage.pixels[i++] = color(0, 0, 0, 0);
+            image.loadPixels();
+            for (PVector position : positions)
+            {
+                int originalX = (int) position.x;
+                int originalY = (int) position.y;
+                int originalP = originalX + originalY * image.width;
+                int newX = originalX - minX;
+                int newY = originalY - minY;
+                int newP = newX + newY * width;
+                // System.out.println(newP);
+                // System.out.println(newX);
+                // System.out.println(newY);
+                newImage.pixels[newP] = image.pixels[originalP];
+            }
+            newImage.updatePixels();
+            return newImage;
         }
         return null;
     }
@@ -84,12 +125,9 @@ public class Main extends Window
     {
         if (event.isShiftDown())
             end = init = new PVector(mouseX, mouseY);
-        else
-        {
-            loadPixels();
-            int color = get(mouseX, mouseY);
-            System.out.printf("color: (%03d, %03d, %03d)\n", (int) red(color), (int) green(color), (int) blue(color));
-        }
+        else if (event.isAltDown())
+            // System.out.printf("%03f, %03f, %03f\n", red(image.get(mouseX, mouseY)), green(image.get(mouseX, mouseY)), blue(image.get(mouseX, mouseY)));
+            image = makeFigure(new PVector(mouseX - x, mouseY - y));
     }
 
     @Override
