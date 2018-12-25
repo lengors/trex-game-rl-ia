@@ -76,9 +76,6 @@ public class Main extends Window
                 int newX = originalX - minX;
                 int newY = originalY - minY;
                 int newP = newX + newY * width;
-                // System.out.println(newP);
-                // System.out.println(newX);
-                // System.out.println(newY);
                 newImage.pixels[newP] = image.pixels[originalP];
             }
             newImage.updatePixels();
@@ -126,7 +123,6 @@ public class Main extends Window
         if (event.isShiftDown())
             end = init = new PVector(mouseX, mouseY);
         else if (event.isAltDown())
-            // System.out.printf("%03f, %03f, %03f\n", red(image.get(mouseX, mouseY)), green(image.get(mouseX, mouseY)), blue(image.get(mouseX, mouseY)));
             image = makeFigure(new PVector(mouseX - x, mouseY - y));
     }
 
