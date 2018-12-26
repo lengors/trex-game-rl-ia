@@ -1,4 +1,4 @@
-package engine.ecs;
+package engine.base;
 
 public interface Observer
 {
