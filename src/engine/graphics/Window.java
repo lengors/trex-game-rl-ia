@@ -1,15 +1,26 @@
 package engine.graphics;
 
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import processing.core.PApplet;
 
+import processing.event.KeyEvent;
+import processing.event.MouseEvent;
+
+import engine.listeners.KeyListener;
+import engine.listeners.MouseListener;
+import engine.listeners.InputListener;
+
 public class Window extends PApplet
 {
+    private List<MouseListener> mouseListeners = new ArrayList<>();
+    private List<KeyListener> keyListeners = new ArrayList<>();
     private Builder builder;
 
     @Override
@@ -30,9 +41,103 @@ public class Window extends PApplet
             fullScreen();
     }
 
+    @Override
+    public void keyPressed(KeyEvent event)
+    {
+        for (KeyListener listener : keyListeners)
+            listener.onKeyPress(event);
+    }
+    
+    @Override
+    public void keyReleased(KeyEvent event)
+    {
+        for (KeyListener listener : keyListeners)
+            listener.onKeyRelease(event);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent event)
+    {
+        for (MouseListener listener : mouseListeners)
+            listener.onMouseClick(event);
+    }
+    
+    @Override
+    public void mouseDragged(MouseEvent event)
+    {
+        for (MouseListener listener : mouseListeners)
+            listener.onMouseDrag(event);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent event)
+    {
+        for (MouseListener listener : mouseListeners)
+            listener.onMouseMove(event);
+    }
+    
+    @Override
+    public void mousePressed(MouseEvent event)
+    {
+        for (MouseListener listener : mouseListeners)
+            listener.onMousePress(event);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent event)
+    {
+        for (MouseListener listener : mouseListeners)
+            listener.onMouseRelease(event);
+    }
+
+    @Override
+    public void mouseWheel(MouseEvent event)
+    {
+        for (MouseListener listener : mouseListeners)
+            listener.onMouseWheel(event);
+    }
+
+    public Window addListener(InputListener inputListener)
+    {
+        mouseListeners.add(inputListener);
+        keyListeners.add(inputListener);
+        return this;
+    }
+
+    public Window addListener(MouseListener mouseListener)
+    {
+        mouseListeners.add(mouseListener);
+        return this;
+    }
+
+    public Window addListener(KeyListener keyListener)
+    {
+        keyListeners.add(keyListener);
+        return this;
+    }
+
     public Window setBuilder(Builder builder)
     {
         this.builder = builder;
+        return this;
+    }
+    
+    public Window removeListener(InputListener inputListener)
+    {
+        mouseListeners.remove(inputListener);
+        keyListeners.remove(inputListener);
+        return this;
+    }
+
+    public Window removeListener(MouseListener mouseListener)
+    {
+        mouseListeners.remove(mouseListener);
+        return this;
+    }
+
+    public Window removeListener(KeyListener keyListener)
+    {
+        keyListeners.remove(keyListener);
         return this;
     }
 

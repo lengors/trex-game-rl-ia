@@ -1,179 +1,139 @@
 package engine.base;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+
+import engine.listeners.DefaultListener;
 
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-public class Game implements Runnable
+public class Game extends DefaultListener implements Runnable
 {
     private Map<String, GameState> gameStates = new HashMap<>();
     private List<GameObject> gameObjects = new ArrayList<>();
-
     private GameState gameState;
-    private String initialState;
-    private Thread thread;
 
-    public Game addObject(GameObject gameObject)
-    {
-        gameObjects.add(gameObject);
-        return this;
-    }
-
-    public GameObject getObject(int index)
-    {
-        return gameObjects.get(index);
-    }
-
-    public int getObjectCount()
-    {
-        return gameObjects.size();
-    }
-
-    public <T extends GameObject> T getObject(Class<T> objectClass, int index)
-    {
-        for (GameObject gameObject : gameObjects)
-            if (gameObject.getClass().isAssignableFrom(objectClass))
-            {
-                if (index == 0)
-                    return (T) gameObject;
-                else
-                    index -= 1;
-            }
-        return null;
-    }
-
-    public <T extends GameObject> T getObject(Class<T> objectClass)
-    {
-        return getObject(objectClass, 0);
-    }
-
-    public List<GameObject> getObjects()
-    {
-        return new ArrayList<>(gameObjects);
-    }
-
-    public <T extends GameObject> List<T> getObjects(Class<T> objectClass)
-    {
-        List<T> objects = new ArrayList<>();
-        for (GameObject gameObject : gameObjects)
-            if (gameObject.getClass().isAssignableFrom(objectClass))
-                objects.add((T) gameObject);
-        return objects;
-    }
-
-    public boolean removeObject(GameObject gameObject)
-    {
-        return gameObjects.remove(gameObject);
-    }
-
-    public GameObject removeObject(int index)
-    {
-        return gameObjects.remove(index);
-    }
-
-    public void join()
+    public <T extends GameObject> T addGameObject(Class<T> gameObjectClass)
     {
         try
         {
-            if (thread != null)
-                thread.join();
+            return (T) gameObjectClass.getConstructor().newInstance().setGame(this);
         }
-        catch (InterruptedException e)
+        catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException e)
         {
             throw new RuntimeException(e);
         }
     }
 
-    public Game register(String stateName, GameState gameState)
+    public Game addGameObject(GameObject gameObject)
     {
-        gameStates.put(stateName, gameState);
-        gameState.setGame(this);
-        gameState.onRegister();
-        if (initialState == null)
-            initialState = stateName;
+        gameObjects.add(gameObject.setGame(this));
         return this;
     }
 
-    public Game register(GameState gameState)
+    public boolean addGameState(GameState gameState)
     {
-        return register(gameState.getName(), gameState);
+        if (gameState != null)
+        {
+            gameStates.put(gameState.getName(), gameState.setGame(this));
+            if (this.gameState == null)
+                this.gameState = gameState;
+            return true;
+        }
+        return false;
     }
 
-    public Game unregister(GameState gameState)
+    public GameObject getGameObject(int index)
     {
-        return unregister(gameState.getName());
+        return gameObjects.get(index);
     }
 
-    public Game unregister(String stateName)
+    public int getGameObjectCount()
     {
-        GameState gameState = gameStates.remove(stateName);
-        gameState.onUnregister();
-        gameState.setGame(null);
-        return this;
+        return gameObjects.size();
     }
 
-    public Game setInitialState(String initialState)
+    public int getGameObjectIndex(GameObject gameObject)
     {
-        this.initialState = initialState;
-        return this;
+        return gameObjects.indexOf(gameObject);
+    }
+
+    public List<GameObject> getGameObjects()
+    {
+        return new ArrayList<>(gameObjects);
+    }
+
+    public <T extends GameObject> List<T> getGameObjects(Class<T> gameObjectClass)
+    {
+        List<T> specializedGameObjects = new ArrayList<>();
+        for (GameObject gameObject : gameObjects)
+            if (gameObject.getClass().isAssignableFrom(gameObjectClass))
+                specializedGameObjects.add((T) gameObject);
+        return specializedGameObjects;
+    }
+
+    public GameState getGameState(String name)
+    {
+        return gameStates.get(name);
+    }
+
+    public int getGameStateCount()
+    {
+        return gameStates.size();
+    }
+
+    public List<GameState> getGameStates()
+    {
+        return new ArrayList<>(gameStates.values());
+    }
+
+    public Thread makeThreadable()
+    {
+        return new Thread(this);
+    }
+
+    public GameObject removeGameObject(int index)
+    {
+        return gameObjects.remove(index).setGame(null);
+    }
+
+    public boolean removeGameObject(GameObject gameObject)
+    {
+        boolean returnValue = gameObjects.remove(gameObject);
+        if (returnValue)
+            gameObject.setGame(null);
+        return returnValue;
+    }
+
+    public GameState removeGameState(String name)
+    {
+        return gameStates.remove(name).setGame(null);
+    }
+
+    public boolean removeGameState(GameState gameState)
+    {
+        if (gameState != null)
+        {
+            boolean returnValue = gameStates.remove(gameState.getName()) == gameState;
+            if (returnValue)
+                gameState.setGame(null);
+            return returnValue;
+        }
+        return false;
     }
 
     @Override
     public void run()
     {
-        String stateName = initialState;
-        gameState = get(stateName, null);
         while (gameState != null)
-        {
-            stateName = gameState.onRun();
-            gameState = get(stateName, gameState);
-        }
-    }
-
-    public void start()
-    {
-        if (thread != null)
-            thread.start();
+            gameState = gameState.update();
     }
 
     public void stop()
     {
         gameState = null;
-        join();
-    }
-
-    private GameState get(String stateName, GameState gameState)
-    {
-        GameState newGameState = gameStates.get(stateName);
-        if (newGameState != gameState)
-        {
-            gameState.onExit();
-            if (newGameState != null)
-                newGameState.onEnter();
-        }
-        else if (gameState == null)
-            newGameState.onEnter();
-        return newGameState;
-    }
-
-    public Game build(Class<? extends Game> gameClass)
-    {
-        try
-        {
-            Constructor<? extends Game> constructor = gameClass.getConstructor();
-            Game game = constructor.newInstance();
-            Thread thread = new Thread(game);
-            game.thread = thread;
-            return game;
-        }
-        catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-			        | IllegalArgumentException | InvocationTargetException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 }
