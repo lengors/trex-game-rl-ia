@@ -6,10 +6,12 @@ import engine.graphics.Window;
 
 import engine.listeners.KeyListener;
 
-import engine.base.DefaultObservable;
-import engine.base.Observable;
-import engine.base.Observer;
 import engine.base.Game;
+import engine.base.Observer;
+import engine.base.Observable;
+import engine.base.DefaultObservable;
+
+import tests.trexgame.objects.ShapedObject;
 
 public class Main extends Window
 {
@@ -21,6 +23,7 @@ public class Main extends Window
     {
         // Creates trex-game
         game = new TrexGame();
+        game.addResource(Window.class, this);
 
         /* // Creates a trex in the game
         Trex trex = game.addGameObject(Trex.class);
@@ -65,7 +68,7 @@ public class Main extends Window
 
     public static void main(String[] args)
     {
-        // Window window = Window.build(Main.class, 400, 400);
+        Window window = Window.build(Main.class, 400, 400);
     }
 
     public static class Player extends DefaultObservable implements KeyListener

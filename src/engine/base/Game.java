@@ -21,7 +21,9 @@ public class Game extends DefaultListener implements Runnable
     {
         try
         {
-            return (T) gameObjectClass.getConstructor().newInstance().setGame(this);
+            T gameObject = (T) gameObjectClass.getConstructor().newInstance().setGame(this);
+            gameObjects.add(gameObject);
+            return gameObject;
         }
         catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException e)
@@ -48,12 +50,27 @@ public class Game extends DefaultListener implements Runnable
         return false;
     }
 
+    public Game addResource(Class<?> resourceClass, Object resource)
+    {
+        List<Object> list = resources.get(resourceClass);
+        if (list == null)
+            resources.put(resourceClass, list = new ArrayList<>());
+        list.add(resource);
+        return this;
+    }
+
     public Game addResource(Object resource)
     {
-        List<Object> list = resources.get(resource.getClass());
+        return addResource(resource.getClass(), resource);
+    }
+
+    public Game addResources(Class<?> resourceClass, Object... rs)
+    {
+        List<Object> list = resources.get(resourceClass);
         if (list == null)
-            resources.put(resource.getClass(), list = new ArrayList<>());
-        list.add(resource);
+            resources.put(resourceClass, list = new ArrayList<>());
+        for (Object resource : rs)
+            list.add(resource);
         return this;
     }
 
