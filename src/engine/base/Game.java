@@ -115,6 +115,11 @@ public class Game extends DefaultListener implements Runnable
         return gameStates.get(name);
     }
 
+    public GameState getGameState()
+    {
+        return gameState;
+    }
+
     public int getGameStateCount()
     {
         return gameStates.size();
