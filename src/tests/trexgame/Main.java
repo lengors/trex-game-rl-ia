@@ -25,11 +25,11 @@ import processing.event.MouseEvent;
 
 public class Main extends Window
 {
+    private Loader loader;
     private Thread thread;
     private Game game;
 
-    @Override
-    public void setup()
+    public void newGame()
     {
         // Creates trex-game
         game = new TrexGame();
@@ -43,9 +43,6 @@ public class Main extends Window
         // Creates a trex in the game
         TrexObject trex = new TrexObject();
         game.addGameObject(trex);
-
-        Obstacle obstacle = Obstacle.getRandomObstacle();
-        game.addGameObject(obstacle);
         
         // Creates player
         Player player = new Player();
@@ -66,6 +63,14 @@ public class Main extends Window
     }
 
     @Override
+    public void setup()
+    {
+        loader = new Loader(this);
+        fill(0);
+        newGame();
+    }
+
+    @Override
     public void draw()
     {
         background(255);
@@ -74,8 +79,25 @@ public class Main extends Window
             PShape shape = shapedObject.getShape();
             PVector position = shapedObject.getPosition();    
             if (shapedObject.getClass().equals(Ground.class))
+            {
+                Ground ground = (Ground) shapedObject;
                 shape(shape, position.x + shapedObject.getTexture().width, position.y);
+                text(ground.getScore(), 10, 10 + textAscent());
+            }
             shape(shape, position.x, position.y);
+        }
+        if (game.getGameObjects(TrexObject.class).size() == 0)
+        {
+            try
+            {
+                game.stop();
+                thread.join();
+            }
+            catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
+            newGame();
         }
     }
 
@@ -96,7 +118,7 @@ public class Main extends Window
 
     public static void main(String[] args)
     {
-        Window window = Window.build(Main.class, 640, 480);
+        Window window = Window.build(Main.class, 800, 480);
     }
 
     public static class Player extends DefaultObservable implements KeyListener

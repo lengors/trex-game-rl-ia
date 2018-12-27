@@ -1,5 +1,6 @@
 package tests.trexgame.objects.obstacles;
 
+import java.util.List;
 import java.util.Random;
 
 import java.lang.reflect.InvocationTargetException;
@@ -25,13 +26,19 @@ public class Obstacle extends ShapedObject
     public void setup()
     {
         super.setup();
+        random.setSeed(System.nanoTime());
         Window window = getGame().getResource(Window.class);
-        position = new PVector(window.width * 1.5f + random.nextInt(window.width / 2), getGroundPosition());
+        List<Obstacle> list = getGame().getGameObjects(Obstacle.class);
+        if (list.size() == 0 || list.get(list.size() - 1) == this)
+            position = new PVector(window.width * 2 + random.nextInt(window.width), getGroundPosition());
+        else
+            position = new PVector(list.get(list.size() - 1).getPosition().x + window.width / 2 + random.nextInt(window.width / 2 - getTexture().width) + getTexture().width, getGroundPosition());
     }
 
     @Override
     public void update()
     {
+        super.update();
         position.x -= getGame().getGameObjects(Ground.class).get(0).getSpeed();
     }
 

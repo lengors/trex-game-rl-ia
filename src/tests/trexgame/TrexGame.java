@@ -9,7 +9,6 @@ public class TrexGame extends Game
 {
     public TrexGame()
     {
-        addGameState(new LostState());
         addGameState(new MainState());
     }
 }

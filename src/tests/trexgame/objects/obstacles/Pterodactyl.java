@@ -3,11 +3,20 @@ package tests.trexgame.objects.obstacles;
 import processing.core.PVector;
 
 import tests.trexgame.objects.Ground;
+
+import java.util.Random;
+
 import engine.base.Observable;
 import engine.base.Observer;
 
 public class Pterodactyl extends Obstacle
 {
+    private static int[] positions = new int[]
+    {
+        10, 40, 60
+    };
+    private static Random random = new Random();
+
     private int pAnimationIndex = 0;
 
     @Override
@@ -34,7 +43,8 @@ public class Pterodactyl extends Obstacle
     public void setup()
     {
         super.setup();
-        position.y = getGroundPosition();
+        random.setSeed(System.nanoTime());
+        position.y -= positions[random.nextInt(positions.length)];
     }
 
     @Override
@@ -50,5 +60,6 @@ public class Pterodactyl extends Obstacle
                 position.y -= 8;
             pAnimationIndex = cIndex;
         }
+        position.x -= 1;
     }
 }

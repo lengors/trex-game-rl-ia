@@ -3,7 +3,10 @@ package tests.trexgame.objects;
 import engine.base.Observer;
 import engine.base.Observable;
 
+import processing.core.PImage;
 import processing.core.PVector;
+
+import tests.trexgame.objects.obstacles.Obstacle;
 
 public class TrexObject extends BaseObject implements Observer
 {
@@ -13,6 +16,17 @@ public class TrexObject extends BaseObject implements Observer
     public TrexObject()
     {
         position = new PVector();
+    }
+
+    public boolean collides(Obstacle obstacle)
+    {
+        PImage thisTexture = getTexture();
+        PImage obstacleTexture = obstacle.getTexture();
+        float thisX = position.x - thisTexture.width / 2 - 2;
+        float thisY = position.y - thisTexture.height / 2 - 2;
+        float obstacleX = obstacle.getPosition().x - obstacleTexture.width / 2 - 2;
+        float obstacleY = obstacle.getPosition().y - obstacleTexture.height / 2 - 2;
+        return thisX < obstacleX + obstacleTexture.width - 2 && thisX + thisTexture.width - 2 > obstacleX && thisY < obstacleY + obstacleTexture.height - 2 && thisY + thisTexture.height - 2 > obstacleY;
     }
 
     @Override
@@ -80,7 +94,7 @@ public class TrexObject extends BaseObject implements Observer
     public static void jump(TrexObject trex)
     {
         if (trex.position.y >= trex.getGroundPosition())
-            trex.acceleration.sub(0, 10);
+            trex.acceleration.sub(0, 11);
     }
 
     public static interface Action
