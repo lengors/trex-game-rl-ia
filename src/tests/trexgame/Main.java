@@ -65,6 +65,7 @@ public class Main extends Window
     @Override
     public void setup()
     {
+        surface.setVisible(true);
         loader = new Loader(this);
         fill(0);
         newGame();
