@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import engine.listeners.DefaultListener;
 
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -14,7 +15,9 @@ public class Game extends DefaultListener implements Runnable
     private Map<Class<?>, List<Object>> resources = new HashMap<>();
     private Map<String, GameState> gameStates = new HashMap<>();
     private List<GameObject> gameObjects = new ArrayList<>();
+    private Semaphore semaphore = new Semaphore(0);
     private volatile boolean running;
+    private double upsNS = 1e9 / 60;
     private GameState gameState;
 
     public <T extends GameObject> T addGameObject(Class<T> gameObjectClass)
@@ -105,7 +108,7 @@ public class Game extends DefaultListener implements Runnable
     {
         List<T> specializedGameObjects = new ArrayList<>();
         for (GameObject gameObject : gameObjects)
-            if (gameObject.getClass().isAssignableFrom(gameObjectClass))
+            if (gameObjectClass.isAssignableFrom(gameObject.getClass()))
                 specializedGameObjects.add((T) gameObject);
         return specializedGameObjects;
     }
@@ -234,16 +237,45 @@ public class Game extends DefaultListener implements Runnable
         running = true;
         for (GameObject gameObject : gameObjects)
             gameObject.setup();
+        semaphore.release();
+
+        double delta = 0;
+        long lastTime = System.nanoTime();
+
         while (gameState != null && running)
         {
-            gameState = gameState.update();
-            for (GameObject gameObject : gameObjects)
-                gameObject.update();
+            long now = System.nanoTime();
+            delta += (now - lastTime) / upsNS;
+            while (delta >= 1)
+            {
+                gameState = gameState.update();
+                for (GameObject gameObject : gameObjects)
+                    gameObject.update();
+                --delta;
+            }
+            lastTime = now;
         }
+    }
+
+    public void setUPS(double ups)
+    {
+        upsNS = 1e9 / ups;
     }
 
     public void stop()
     {
         running = false;
+    }
+
+    public void waitForSetup()
+    {
+        try
+        {
+            semaphore.acquire();
+        }
+        catch (InterruptedException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }

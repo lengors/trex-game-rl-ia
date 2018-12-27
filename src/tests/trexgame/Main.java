@@ -5,13 +5,20 @@ import java.awt.event.KeyEvent;
 import engine.graphics.Window;
 
 import engine.listeners.KeyListener;
+import engine.listeners.MouseListener;
 
 import engine.base.Game;
 import engine.base.Observer;
 import engine.base.Observable;
 import engine.base.DefaultObservable;
 
+import tests.trexgame.objects.TrexObject;
 import tests.trexgame.objects.ShapedObject;
+
+import processing.core.PShape;
+import processing.core.PVector;
+
+import processing.event.MouseEvent;
 
 public class Main extends Window
 {
@@ -23,32 +30,41 @@ public class Main extends Window
     {
         // Creates trex-game
         game = new TrexGame();
+        
+        game.setUPS(2);
+        game.addResource(new Loader(this));
         game.addResource(Window.class, this);
 
-        /* // Creates a trex in the game
-        Trex trex = game.addGameObject(Trex.class);
-
+        // Creates a trex in the game
+        TrexObject trex = new TrexObject();
+        game.addGameObject(trex);
+        
         // Creates player
         Player player = new Player();
-     
+        
         // Binds observers to observables
         player.addObserver(trex);
-     
+        
         // Binds listeners this window
-        addListener(player); */
+        addListener(player);
         addListener(game);
 
         // starts game
         thread = game.makeThreadable();
         thread.start();
+        game.waitForSetup();
     }
 
     @Override
     public void draw()
     {
         background(255);
-        /* for (ShapedObject shapedObject : game.getGameObjects(ShapedObject.class))
-            shape(shapedObject); */
+        for (ShapedObject shapedObject : game.getGameObjects(ShapedObject.class))
+        {
+            PShape shape = shapedObject.getShape();
+            PVector position = shapedObject.getPosition();    
+            shape(shape, position.x, position.y);
+        }
     }
 
     @Override
@@ -71,7 +87,17 @@ public class Main extends Window
         Window window = Window.build(Main.class, 400, 400);
     }
 
-    public static class Player extends DefaultObservable implements KeyListener
+    public static class Player extends DefaultObservable implements MouseListener
+    {
+        @Override public void onMouseMove(MouseEvent event) { dispatch(new PVector(event.getX(), event.getY())); }
+        @Override public void onMouseDrag(MouseEvent event) { }
+        @Override public void onMousePress(MouseEvent event) { }
+        @Override public void onMouseClick(MouseEvent event) { }
+        @Override public void onMouseWheel(MouseEvent event) { }
+        @Override public void onMouseRelease(MouseEvent event) { }
+    }
+    
+    /* implements KeyListener
     {
         private int pressedKeyCode;
 
@@ -79,9 +105,9 @@ public class Main extends Window
         public void onKeyPress(processing.event.KeyEvent event)
         {
             if (event.getKeyCode() == KeyEvent.VK_SPACE || event.getKeyCode() == KeyEvent.VK_UP)
-                dispatch(1/*Trex.JUMP*/);
+                dispatch(1Trex.JUMP);
             else if (event.getKeyCode() == KeyEvent.VK_DOWN)
-                dispatch(2/*Trex.DOWN*/);
+                dispatch(2Trex.DOWN);
             else
                 return;
             pressedKeyCode = event.getKeyCode();
@@ -92,9 +118,9 @@ public class Main extends Window
         {
             if (event.getKeyCode() == pressedKeyCode)
             {
-                dispatch(0/*Trex.NOACTION*/);
+                dispatch(0Trex.NOACTION);
                 pressedKeyCode = -1;
             }
         }
-    }
+    }*/
 }
