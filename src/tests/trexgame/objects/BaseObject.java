@@ -6,7 +6,12 @@ public class BaseObject extends ShapedObject
 {
     protected PVector acceleration;
     protected PVector velocity;
-    // private long lastTime;
+
+    public int getGroundPosition()
+    {
+        int groundPosition = (int) getGame().getGameObjects(Ground.class).get(0).position.y;
+        return groundPosition - (int) (getTexture().height / 2) + 5;
+    }
 
     @Override
     public void setup()
@@ -14,22 +19,21 @@ public class BaseObject extends ShapedObject
         super.setup();
         velocity = new PVector();
         acceleration = new PVector();
-        // lastTime = System.nanoTime();
+        position = new PVector(0, getGroundPosition());
     }
 
     @Override
     public void update()
     {
-        // long now = System.nanoTime();
-        // float delta = 
         super.update();
         acceleration.add(0, .7f);
         velocity.add(acceleration);
         position.add(velocity);
         acceleration.set(0, 0);
-        float ground = getGame().getGameObjects(Ground.class).get(0).position.y - 10;
+        float ground = getGroundPosition();
         if (position.y > ground)
         {
+            acceleration.sub(0, .7f);
             position.y = ground;
             velocity.y = 0;
         }

@@ -8,6 +8,7 @@ import processing.core.PVector;
 public class TrexObject extends BaseObject implements Observer
 {
     private Action action = (TrexObject trex) -> { };
+    private int offset = 0;
 
     public TrexObject()
     {
@@ -15,11 +16,23 @@ public class TrexObject extends BaseObject implements Observer
     }
 
     @Override
+    public int getAnimationLength()
+    {
+        return 2;
+    }
+
+    @Override
+    public int getAnimationOffset()
+    {
+        return offset;
+    }
+
+    @Override
     public String[] getNames()
     {
         return new String[]
         {
-            "dino-2", "dino-3"
+            "dino-2", "dino-3", "dino-down-0", "dino-down-1"
         };
     }
 
@@ -27,13 +40,17 @@ public class TrexObject extends BaseObject implements Observer
     public void setup()
     {
         super.setup();
-        position = new PVector(25, getGame().getGameObjects(Ground.class).get(0).position.y - 10);
+        position.x = 30;
     }
 
     @Override
     public void update()
     {
         action.apply(this);
+        if (acceleration.y > 0 && position.y >= getGroundPosition())
+            offset = 2;
+        else
+            offset = 0;
         super.update();
     }
 
@@ -62,7 +79,7 @@ public class TrexObject extends BaseObject implements Observer
 
     public static void jump(TrexObject trex)
     {
-        if (trex.position.y == trex.getGame().getGameObjects(Ground.class).get(0).position.y - 10)
+        if (trex.position.y >= trex.getGroundPosition())
             trex.acceleration.sub(0, 10);
     }
 

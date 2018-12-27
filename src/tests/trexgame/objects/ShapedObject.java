@@ -15,6 +15,29 @@ public class ShapedObject extends GameObject
     protected PShape[] texturedMeshs;
     protected PVector position;
     protected double animation;
+    private PImage[] textures;
+
+    public int getAnimationIndex()
+    {
+        int index = (int) Math.floor(animation);
+        index %= getAnimationLength();
+        return index + getAnimationOffset();
+    }
+
+    public int getAnimationLength()
+    {
+        return texturedMeshs.length;
+    }
+
+    public int getAnimationOffset()
+    {
+        return 0;
+    }
+
+    public int getAnimationsPerSec()
+    {
+        return 10;
+    }
 
     public String[] getNames()
     {
@@ -31,8 +54,12 @@ public class ShapedObject extends GameObject
 
     public PShape getShape()
     {
-        int index = (int) Math.floor(animation);
-        return texturedMeshs[index % texturedMeshs.length];
+        return texturedMeshs[getAnimationIndex()];
+    }
+
+    public PImage getTexture()
+    {
+        return textures[getAnimationIndex()];
     }
 
     @Override
@@ -41,7 +68,7 @@ public class ShapedObject extends GameObject
         Window window = getGame().getResource(Window.class);
         Loader loader = getGame().getResource(Loader.class);
         
-        PImage[] textures = loader.get(getNames());
+        textures = loader.get(getNames());
         texturedMeshs = new PShape[textures.length];
 
         for (int i = 0; i < textures.length; ++i)
@@ -59,8 +86,8 @@ public class ShapedObject extends GameObject
     @Override
     public void update()
     {
-        animation += getGame().getUpsNS() * 1e-8;
-        if (animation >= texturedMeshs.length)
+        animation += getAnimationsPerSec() * getGame().getUpsNS() * 1e-9;
+        if (animation >= getAnimationLength())
             animation = 0;
     }
 }

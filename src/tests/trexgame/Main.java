@@ -12,9 +12,11 @@ import engine.base.Observer;
 import engine.base.Observable;
 import engine.base.DefaultObservable;
 
-import tests.trexgame.objects.TrexObject;
 import tests.trexgame.objects.Ground;
+import tests.trexgame.objects.TrexObject;
 import tests.trexgame.objects.ShapedObject;
+import tests.trexgame.objects.obstacles.Obstacle;
+import tests.trexgame.objects.obstacles.Pterodactyl;
 
 import processing.core.PShape;
 import processing.core.PVector;
@@ -42,6 +44,9 @@ public class Main extends Window
         // Creates a trex in the game
         TrexObject trex = new TrexObject();
         game.addGameObject(trex);
+
+        Obstacle obstacle = new Pterodactyl();
+        game.addGameObject(obstacle);
         
         // Creates player
         Player player = new Player();
