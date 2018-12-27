@@ -4,12 +4,14 @@ import java.util.Random;
 
 import java.lang.reflect.InvocationTargetException;
 
+import engine.graphics.Window;
+
 import tests.trexgame.objects.Ground;
-import tests.trexgame.objects.BaseObject;
+import tests.trexgame.objects.ShapedObject;
 
 import processing.core.PVector;
 
-public class Obstacle extends BaseObject
+public class Obstacle extends ShapedObject
 {
     private static Class<? extends Obstacle>[] obstaclesClasses = new Class[]
     {
@@ -23,7 +25,14 @@ public class Obstacle extends BaseObject
     public void setup()
     {
         super.setup();
-        position.x = 350;
+        Window window = getGame().getResource(Window.class);
+        position = new PVector(window.width * 1.5f + random.nextInt(window.width / 2), getGroundPosition());
+    }
+
+    @Override
+    public void update()
+    {
+        position.x -= getGame().getGameObjects(Ground.class).get(0).getSpeed();
     }
 
     public static Obstacle getRandomObstacle()

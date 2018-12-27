@@ -12,14 +12,13 @@ public class Pterodactyl extends Obstacle
 
     @Override
     public int getAnimationsPerSec() {
-        return 1;
+        return 4;
     }
 
     @Override
     public int getGroundPosition()
     {
-        int groundPosition = (int) getGame().getGameObjects(Ground.class).get(0).getPosition().y;
-        return groundPosition;
+        return (int) getGame().getGameObjects(Ground.class).get(0).getPosition().y;
     }
 
     @Override
@@ -46,9 +45,10 @@ public class Pterodactyl extends Obstacle
         if (pAnimationIndex != cIndex)
         {
             if (cIndex == 0)
-                position.y -= 6;
+                position.y += 8;
             else
-                position.y += 6;
+                position.y -= 8;
+            pAnimationIndex = cIndex;
         }
     }
 }

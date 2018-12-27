@@ -34,7 +34,6 @@ public class Main extends Window
         // Creates trex-game
         game = new TrexGame();
 
-        game.setUPS(60);
         game.addResource(new Loader(this));
         game.addResource(Window.class, this);
 
@@ -45,7 +44,7 @@ public class Main extends Window
         TrexObject trex = new TrexObject();
         game.addGameObject(trex);
 
-        Obstacle obstacle = new Pterodactyl();
+        Obstacle obstacle = Obstacle.getRandomObstacle();
         game.addGameObject(obstacle);
         
         // Creates player
@@ -61,6 +60,8 @@ public class Main extends Window
         // starts game
         thread = game.makeThreadable();
         thread.start();
+
+        // Waits for setup to run
         game.waitForSetup();
     }
 
@@ -72,6 +73,8 @@ public class Main extends Window
         {
             PShape shape = shapedObject.getShape();
             PVector position = shapedObject.getPosition();    
+            if (shapedObject.getClass().equals(Ground.class))
+                shape(shape, position.x + shapedObject.getTexture().width, position.y);
             shape(shape, position.x, position.y);
         }
     }
@@ -93,7 +96,7 @@ public class Main extends Window
 
     public static void main(String[] args)
     {
-        Window window = Window.build(Main.class, 400, 400);
+        Window window = Window.build(Main.class, 640, 480);
     }
 
     public static class Player extends DefaultObservable implements KeyListener

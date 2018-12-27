@@ -39,6 +39,12 @@ public class ShapedObject extends GameObject
         return 10;
     }
 
+    public int getGroundPosition()
+    {
+        int groundPosition = (int) getGame().getGameObjects(Ground.class).get(0).position.y;
+        return groundPosition - (int) (getTexture().height / 2) + 5;
+    }
+
     public String[] getNames()
     {
         return new String[]

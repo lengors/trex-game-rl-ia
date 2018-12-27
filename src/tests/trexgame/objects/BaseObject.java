@@ -7,12 +7,6 @@ public class BaseObject extends ShapedObject
     protected PVector acceleration;
     protected PVector velocity;
 
-    public int getGroundPosition()
-    {
-        int groundPosition = (int) getGame().getGameObjects(Ground.class).get(0).position.y;
-        return groundPosition - (int) (getTexture().height / 2) + 5;
-    }
-
     @Override
     public void setup()
     {
