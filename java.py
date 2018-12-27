@@ -28,17 +28,26 @@ if sys.platform == 'win32':
                 os.environ['PATH'] += os.pathsep + os.path.dirname(path)
 
 if len(sys.argv) >= 2:
-    if sys.argv[1] == '--compile' and len(sys.argv) == 2:
+    if sys.argv[1] == '-c' and len(sys.argv) == 2:
         delete('bin')
         os.mkdir('bin')
         dependencies = os.pathsep.join(find(os.path.join('res', 'dependencies'), '.+\.jar'))
         call = [ 'javac', '-cp', dependencies, '-d', 'bin' ] + find('src', '.+\.java')
         subprocess.call(call, shell = sys.platform == 'win32')
-    elif sys.argv[1] == '--run' and len(sys.argv) == 3:
+    elif sys.argv[1] == '-r' and len(sys.argv) == 3:
+        dependencies = os.pathsep.join(find(os.path.join('res', 'dependencies'), '.+\.jar'))
+        dependencies = 'bin{}{}'.format(os.pathsep, dependencies)
+        subprocess.call([ 'java', '-cp', dependencies, sys.argv[2] ])
+    elif sys.argv[1][0] == '-' and 'r' in sys.argv[1] and 'c' in sys.argv[1] and len(sys.argv) == 3:
+        delete('bin')
+        os.mkdir('bin')
+        dependencies = os.pathsep.join(find(os.path.join('res', 'dependencies'), '.+\.jar'))
+        call = [ 'javac', '-cp', dependencies, '-d', 'bin' ] + find('src', '.+\.java')
+        subprocess.call(call, shell = sys.platform == 'win32')
         dependencies = os.pathsep.join(find(os.path.join('res', 'dependencies'), '.+\.jar'))
         dependencies = 'bin{}{}'.format(os.pathsep, dependencies)
         subprocess.call([ 'java', '-cp', dependencies, sys.argv[2] ])
     else:
-        print('Usage: python[3] java.py [--run classname | --compile]')
+        print('Usage: python[3] java.py [-r classname | -c]')
 else:
-    print('Usage: python[3] java.py [--run classname | --compile]')
+    print('Usage: python[3] java.py [-r classname | -c]')

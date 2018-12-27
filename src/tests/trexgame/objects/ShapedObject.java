@@ -14,7 +14,7 @@ public class ShapedObject extends GameObject
 {
     protected PShape[] texturedMeshs;
     protected PVector position;
-    protected int animation;
+    protected double animation;
 
     public String[] getNames()
     {
@@ -31,7 +31,8 @@ public class ShapedObject extends GameObject
 
     public PShape getShape()
     {
-        return texturedMeshs[animation % texturedMeshs.length];
+        int index = (int) Math.floor(animation);
+        return texturedMeshs[index % texturedMeshs.length];
     }
 
     @Override
@@ -58,7 +59,8 @@ public class ShapedObject extends GameObject
     @Override
     public void update()
     {
-        animation += 1;
-        animation = animation % texturedMeshs.length;
+        animation += getGame().getUpsNS() * 1e-8;
+        if (animation >= texturedMeshs.length)
+            animation = 0;
     }
 }

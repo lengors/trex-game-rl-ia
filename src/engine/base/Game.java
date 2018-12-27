@@ -160,6 +160,11 @@ public class Game extends DefaultListener implements Runnable
         return rs;
     }
 
+    public double getUpsNS()
+    {
+        return upsNS;
+    }
+
     public Thread makeThreadable()
     {
         return new Thread(this);

@@ -13,6 +13,7 @@ import engine.base.Observable;
 import engine.base.DefaultObservable;
 
 import tests.trexgame.objects.TrexObject;
+import tests.trexgame.objects.Ground;
 import tests.trexgame.objects.ShapedObject;
 
 import processing.core.PShape;
@@ -30,10 +31,13 @@ public class Main extends Window
     {
         // Creates trex-game
         game = new TrexGame();
-        
-        game.setUPS(2);
+
+        game.setUPS(60);
         game.addResource(new Loader(this));
         game.addResource(Window.class, this);
+
+        Ground ground = new Ground();
+        game.addGameObject(ground);
 
         // Creates a trex in the game
         TrexObject trex = new TrexObject();
@@ -87,17 +91,7 @@ public class Main extends Window
         Window window = Window.build(Main.class, 400, 400);
     }
 
-    public static class Player extends DefaultObservable implements MouseListener
-    {
-        @Override public void onMouseMove(MouseEvent event) { dispatch(new PVector(event.getX(), event.getY())); }
-        @Override public void onMouseDrag(MouseEvent event) { }
-        @Override public void onMousePress(MouseEvent event) { }
-        @Override public void onMouseClick(MouseEvent event) { }
-        @Override public void onMouseWheel(MouseEvent event) { }
-        @Override public void onMouseRelease(MouseEvent event) { }
-    }
-    
-    /* implements KeyListener
+    public static class Player extends DefaultObservable implements KeyListener
     {
         private int pressedKeyCode;
 
@@ -105,9 +99,9 @@ public class Main extends Window
         public void onKeyPress(processing.event.KeyEvent event)
         {
             if (event.getKeyCode() == KeyEvent.VK_SPACE || event.getKeyCode() == KeyEvent.VK_UP)
-                dispatch(1Trex.JUMP);
+                dispatch((TrexObject.Action) TrexObject::jump);
             else if (event.getKeyCode() == KeyEvent.VK_DOWN)
-                dispatch(2Trex.DOWN);
+                dispatch((TrexObject.Action) TrexObject::down);
             else
                 return;
             pressedKeyCode = event.getKeyCode();
@@ -118,9 +112,9 @@ public class Main extends Window
         {
             if (event.getKeyCode() == pressedKeyCode)
             {
-                dispatch(0Trex.NOACTION);
+                dispatch((TrexObject.Action) (TrexObject trex) -> { });
                 pressedKeyCode = -1;
             }
         }
-    }*/
+    }
 }
