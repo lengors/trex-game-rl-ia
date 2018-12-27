@@ -11,8 +11,10 @@ import java.util.ArrayList;
 
 public class Game extends DefaultListener implements Runnable
 {
+    private Map<Class<?>, List<Object>> resources = new HashMap<>();
     private Map<String, GameState> gameStates = new HashMap<>();
     private List<GameObject> gameObjects = new ArrayList<>();
+    private volatile boolean running;
     private GameState gameState;
 
     public <T extends GameObject> T addGameObject(Class<T> gameObjectClass)
@@ -44,6 +46,22 @@ public class Game extends DefaultListener implements Runnable
             return true;
         }
         return false;
+    }
+
+    public Game addResource(Object resource)
+    {
+        List<Object> list = resources.get(resource.getClass());
+        if (list == null)
+            resources.put(resource.getClass(), list = new ArrayList<>());
+        list.add(resource);
+        return this;
+    }
+
+    public Game addResources(Object... resources)
+    {
+        for (Object resource : resources)
+            addResource(resource);
+        return this;
     }
 
     public GameObject getGameObject(int index)
@@ -90,9 +108,50 @@ public class Game extends DefaultListener implements Runnable
         return new ArrayList<>(gameStates.values());
     }
 
+    public <T> T getResource(Class<T> resourceClass, int index)
+    {
+        return (T) resources.get(resourceClass).get(index);
+    }
+
+    public <T> T getResource(Class<T> resourceClass)
+    {
+        return getResource(resourceClass, 0);
+    }
+
+    public <T> List<T> getResources(Class<T> resourcesClass)
+    {
+        List<Object> list = resources.get(resourcesClass);
+        List<T> result = new ArrayList<>(list.size());
+        for (Object object : list)
+            result.add((T) object);
+        return result;
+    }
+
+    public List<Object> getResources()
+    {
+        List<Object> rs = new ArrayList<>();
+        for (List<Object> list : resources.values())
+            rs.addAll(list);
+        return rs;
+    }
+
     public Thread makeThreadable()
     {
         return new Thread(this);
+    }
+
+    public <T> T popResource(Class<T> resourceClass, int index)
+    {
+        List<Object> rs = resources.get(resourceClass);
+        T resource = (T) rs.remove(index);
+        if (rs.size() == 0)
+            resources.remove(resourceClass);
+        return resource;
+    }
+    
+    public <T> T popResource(Class<T> resourceClass)
+    {
+        return popResource(resourceClass, 0);
     }
 
     public GameObject removeGameObject(int index)
@@ -125,15 +184,44 @@ public class Game extends DefaultListener implements Runnable
         return false;
     }
 
+    public <T> List<T> removeResources(Class<T> resourcesClass)
+    {
+        List<Object> list = resources.remove(resourcesClass);
+        List<T> result = new ArrayList<>(list.size());
+        for (Object object : list)
+            result.add((T) object);
+        return result;
+    }
+
+    public boolean removeResource(Object resource)
+    {
+        List<Object> rs = resources.get(resource.getClass());
+        if (rs != null)
+        {
+            boolean returnValue = rs.remove(resource);
+            if (rs.size() == 0)
+                resources.remove(resource.getClass());
+            return returnValue;
+        }
+        return false;
+    }
+
     @Override
     public void run()
     {
-        while (gameState != null)
+        running = true;
+        for (GameObject gameObject : gameObjects)
+            gameObject.setup();
+        while (gameState != null && running)
+        {
             gameState = gameState.update();
+            for (GameObject gameObject : gameObjects)
+                gameObject.update();
+        }
     }
 
     public void stop()
     {
-        gameState = null;
+        running = false;
     }
 }

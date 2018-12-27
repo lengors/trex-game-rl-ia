@@ -65,7 +65,7 @@ public class Main extends Window
 
     public static void main(String[] args)
     {
-        Window window = Window.build(Main.class, 400, 400);
+        // Window window = Window.build(Main.class, 400, 400);
     }
 
     public static class Player extends DefaultObservable implements KeyListener

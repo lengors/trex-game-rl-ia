@@ -17,7 +17,7 @@ import engine.listeners.KeyListener;
 import engine.listeners.MouseListener;
 import engine.listeners.InputListener;
 
-public class Window extends PApplet
+public class Window extends PApplet implements InputListener
 {
     private List<MouseListener> mouseListeners = new ArrayList<>();
     private List<KeyListener> keyListeners = new ArrayList<>();
@@ -95,6 +95,55 @@ public class Window extends PApplet
     {
         for (MouseListener listener : mouseListeners)
             listener.onMouseWheel(event);
+    }
+
+    @Override
+    public void onKeyPress(KeyEvent event)
+    {
+        if (event.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE)
+            exit();
+    }
+    
+    @Override
+    public void onKeyRelease(KeyEvent event)
+    {
+
+    }
+
+    @Override
+    public void onMouseClick(MouseEvent event)
+    {
+
+    }
+    
+    @Override
+    public void onMouseDrag(MouseEvent event)
+    {
+
+    }
+
+    @Override
+    public void onMouseMove(MouseEvent event)
+    {
+
+    }
+    
+    @Override
+    public void onMousePress(MouseEvent event)
+    {
+
+    }
+
+    @Override
+    public void onMouseRelease(MouseEvent event)
+    {
+
+    }
+
+    @Override
+    public void onMouseWheel(MouseEvent event)
+    {
+
     }
 
     public Window addListener(InputListener inputListener)
@@ -202,6 +251,7 @@ public class Window extends PApplet
             {
                 Constructor<? extends Window> windowConstructor = windowClass.getConstructor();
                 Window window = windowConstructor.newInstance();
+                window.addListener(window);
                 PApplet.runSketch(new String[] { windowClass.getName() }, window.setBuilder(this));
                 return window;
             }

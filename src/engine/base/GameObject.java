@@ -14,4 +14,7 @@ public abstract class GameObject
         this.game = game;
         return this;
     }
+
+    public abstract void update();
+    public abstract void setup();
 }

@@ -1,6 +1,6 @@
 package engine.base;
 
-public abstract class GameState implements Observer
+public abstract class GameState
 {
     private Game game;
 
