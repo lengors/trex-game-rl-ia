@@ -13,9 +13,11 @@ import processing.core.PVector;
 public class ShapedObject extends GameObject
 {
     protected PShape[] texturedMeshs;
+    protected PShape texturedMesh;
     protected PVector position;
     protected double animation;
     private PImage[] textures;
+    private PImage texture;
 
     public int getAnimationIndex()
     {
@@ -60,12 +62,12 @@ public class ShapedObject extends GameObject
 
     public PShape getShape()
     {
-        return texturedMeshs[getAnimationIndex()];
+        return texturedMesh;
     }
 
     public PImage getTexture()
     {
-        return textures[getAnimationIndex()];
+        return texture;
     }
 
     @Override
@@ -87,6 +89,10 @@ public class ShapedObject extends GameObject
             texturedMesh.setTexture(texture);
             texturedMeshs[i] = texturedMesh;
         }
+        
+        int animationIndex = getAnimationIndex();
+        texturedMesh = texturedMeshs[animationIndex];
+        texture = textures[animationIndex];
     }
 
     @Override
@@ -95,5 +101,8 @@ public class ShapedObject extends GameObject
         animation += getAnimationsPerSec() * getGame().getUpsNS() * 1e-9;
         if (animation >= getAnimationLength())
             animation = 0;
+        int animationIndex = getAnimationIndex();
+        texturedMesh = texturedMeshs[animationIndex];
+        texture = textures[animationIndex];
     }
 }

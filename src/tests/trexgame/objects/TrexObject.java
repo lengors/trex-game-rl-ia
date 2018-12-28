@@ -11,7 +11,7 @@ import tests.trexgame.objects.obstacles.Obstacle;
 public class TrexObject extends BaseObject implements Observer
 {
     private Action action = (TrexObject trex) -> { };
-    private int offset = 0;
+    private int offset = 0, length = 2;
 
     public TrexObject()
     {
@@ -32,7 +32,7 @@ public class TrexObject extends BaseObject implements Observer
     @Override
     public int getAnimationLength()
     {
-        return 2;
+        return length;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class TrexObject extends BaseObject implements Observer
     {
         return new String[]
         {
-            "dino-2", "dino-3", "dino-down-0", "dino-down-1"
+            "dino-2", "dino-3", "dino-down-0", "dino-down-1", "dino-0"
         };
     }
 
@@ -62,9 +62,17 @@ public class TrexObject extends BaseObject implements Observer
     {
         action.apply(this);
         if (acceleration.y > 0 && position.y >= getGroundPosition())
-            offset = 2;
+            length = offset = 2;
+        else if (position.y < getGroundPosition())
+        {
+            offset = 4;
+            length = 1;
+        }
         else
+        {
             offset = 0;
+            length = 2;
+        }
         super.update();
     }
 
