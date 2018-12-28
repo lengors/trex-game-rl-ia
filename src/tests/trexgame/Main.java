@@ -5,23 +5,16 @@ import java.awt.event.KeyEvent;
 import engine.graphics.Window;
 
 import engine.listeners.KeyListener;
-import engine.listeners.MouseListener;
 
 import engine.base.Game;
-import engine.base.Observer;
-import engine.base.Observable;
 import engine.base.DefaultObservable;
 
 import tests.trexgame.objects.Ground;
 import tests.trexgame.objects.TrexObject;
 import tests.trexgame.objects.ShapedObject;
-import tests.trexgame.objects.obstacles.Obstacle;
-import tests.trexgame.objects.obstacles.Pterodactyl;
 
 import processing.core.PShape;
 import processing.core.PVector;
-
-import processing.event.MouseEvent;
 
 public class Main extends Window
 {
@@ -119,7 +112,7 @@ public class Main extends Window
 
     public static void main(String[] args)
     {
-        Window window = Window.build(Main.class, 800, 480);
+    	Window.build(Main.class, 800, 480);
     }
 
     public static class Player extends DefaultObservable implements KeyListener

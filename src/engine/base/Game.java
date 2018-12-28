@@ -5,10 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import engine.listeners.DefaultListener;
 
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+
+import java.util.concurrent.Semaphore;
 
 public class Game extends DefaultListener implements Runnable
 {
@@ -24,7 +25,8 @@ public class Game extends DefaultListener implements Runnable
     {
         try
         {
-            T gameObject = (T) gameObjectClass.getConstructor().newInstance().setGame(this);
+            @SuppressWarnings("unchecked")
+			T gameObject = (T) gameObjectClass.getConstructor().newInstance().setGame(this);
             gameObjects.add(gameObject);
             return gameObject;
         }
@@ -104,7 +106,8 @@ public class Game extends DefaultListener implements Runnable
         return new ArrayList<>(gameObjects);
     }
 
-    public <T extends GameObject> List<T> getGameObjects(Class<T> gameObjectClass)
+    @SuppressWarnings("unchecked")
+	public <T extends GameObject> List<T> getGameObjects(Class<T> gameObjectClass)
     {
         List<T> specializedGameObjects = new ArrayList<>();
         for (GameObject gameObject : gameObjects)
@@ -133,7 +136,8 @@ public class Game extends DefaultListener implements Runnable
         return new ArrayList<>(gameStates.values());
     }
 
-    public <T> T getResource(Class<T> resourceClass, int index)
+    @SuppressWarnings("unchecked")
+	public <T> T getResource(Class<T> resourceClass, int index)
     {
         return (T) resources.get(resourceClass).get(index);
     }
@@ -143,7 +147,8 @@ public class Game extends DefaultListener implements Runnable
         return getResource(resourceClass, 0);
     }
 
-    public <T> List<T> getResources(Class<T> resourcesClass)
+    @SuppressWarnings("unchecked")
+	public <T> List<T> getResources(Class<T> resourcesClass)
     {
         List<Object> list = resources.get(resourcesClass);
         List<T> result = new ArrayList<>(list.size());
@@ -173,7 +178,8 @@ public class Game extends DefaultListener implements Runnable
     public <T> T popResource(Class<T> resourceClass, int index)
     {
         List<Object> rs = resources.get(resourceClass);
-        T resource = (T) rs.remove(index);
+        @SuppressWarnings("unchecked")
+		T resource = (T) rs.remove(index);
         if (rs.size() == 0)
             resources.remove(resourceClass);
         return resource;
@@ -214,7 +220,8 @@ public class Game extends DefaultListener implements Runnable
         return false;
     }
 
-    public <T> List<T> removeResources(Class<T> resourcesClass)
+    @SuppressWarnings("unchecked")
+	public <T> List<T> removeResources(Class<T> resourcesClass)
     {
         List<Object> list = resources.remove(resourcesClass);
         List<T> result = new ArrayList<>(list.size());

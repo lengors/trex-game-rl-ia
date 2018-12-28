@@ -14,7 +14,8 @@ import processing.core.PVector;
 
 public class Obstacle extends ShapedObject
 {
-    private static Class<? extends Obstacle>[] obstaclesClasses = new Class[]
+    @SuppressWarnings("unchecked")
+	private static Class<? extends Obstacle>[] obstaclesClasses = new Class[]
     {
         Pterodactyl.class,
         BigCacti1.class, BigCacti2.class, BigCacti3.class,

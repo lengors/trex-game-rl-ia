@@ -2,8 +2,6 @@ package tests.trexgame.objects;
 
 import processing.core.PVector;
 
-import engine.graphics.Window;
-
 public class Ground extends ShapedObject
 {
     private double inScore = 0;
@@ -42,7 +40,8 @@ public class Ground extends ShapedObject
         inScore += (speed + 5) * getGame().getUpsNS() * 1e-9;
         score = (int) Math.floor(inScore);
         position.x -= speed;
-        position.x %= getTexture().width;
+        if (position.x <= -getTexture().width / 2)
+        	position.x = getTexture().width / 2;
         speed += 0.002;
     }
 }

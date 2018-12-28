@@ -10,17 +10,6 @@ public class DefaultListener implements InputListener
 {
     private List<MouseListener> mouseListeners = new ArrayList<>();
     private List<KeyListener> keyListeners = new ArrayList<>();
-    private InputListener listener;
-
-    public DefaultListener(InputListener listener)
-    {
-        this.listener = listener;
-    }
-
-    public DefaultListener()
-    {
-        this.listener = this;
-    }
 
     @Override
     public void onKeyPress(KeyEvent event)

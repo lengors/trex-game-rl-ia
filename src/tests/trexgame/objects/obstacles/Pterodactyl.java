@@ -1,13 +1,8 @@
 package tests.trexgame.objects.obstacles;
 
-import processing.core.PVector;
-
 import tests.trexgame.objects.Ground;
 
 import java.util.Random;
-
-import engine.base.Observable;
-import engine.base.Observer;
 
 public class Pterodactyl extends Obstacle
 {
@@ -20,7 +15,8 @@ public class Pterodactyl extends Obstacle
     private int pAnimationIndex = 0;
 
     @Override
-    public int getAnimationsPerSec() {
+    public int getAnimationsPerSec()
+    {
         return 4;
     }
 
