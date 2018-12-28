@@ -34,7 +34,7 @@ public class Main extends Window
         // Creates trex-game
         game = new TrexGame();
 
-        game.addResource(new Loader(this));
+        game.addResource(loader);
         game.addResource(Window.class, this);
 
         Ground ground = new Ground();

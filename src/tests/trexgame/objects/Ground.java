@@ -33,7 +33,6 @@ public class Ground extends ShapedObject
     public void setup()
     {
         super.setup();
-        Window window = getGame().getResource(Window.class);
         position = new PVector(getTexture().width / 2, 300);
     }
 
