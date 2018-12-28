@@ -8,6 +8,8 @@ import processing.core.PVector;
 
 import tests.trexgame.objects.obstacles.Obstacle;
 
+import java.util.List;
+
 public class TrexObject extends BaseObject implements Observer
 {
     private Action action = (TrexObject trex) -> { };
@@ -22,11 +24,25 @@ public class TrexObject extends BaseObject implements Observer
     {
         PImage thisTexture = getTexture();
         PImage obstacleTexture = obstacle.getTexture();
-        float thisX = position.x - thisTexture.width / 2 - 2;
-        float thisY = position.y - thisTexture.height / 2 - 2;
-        float obstacleX = obstacle.getPosition().x - obstacleTexture.width / 2 - 2;
-        float obstacleY = obstacle.getPosition().y - obstacleTexture.height / 2 - 2;
-        return thisX < obstacleX + obstacleTexture.width - 2 && thisX + thisTexture.width - 2 > obstacleX && thisY < obstacleY + obstacleTexture.height - 2 && thisY + thisTexture.height - 2 > obstacleY;
+        float thisX = (float) Math.floor(position.x - thisTexture.width / 2);
+        float thisY = (float) Math.floor(position.y - thisTexture.height / 2);
+        float obstacleX = (float) Math.floor(obstacle.getPosition().x - obstacleTexture.width / 2);
+        float obstacleY = (float) Math.floor(obstacle.getPosition().y - obstacleTexture.height / 2);
+        if (thisX < obstacleX + obstacleTexture.width && thisX + thisTexture.width > obstacleX && thisY < obstacleY + obstacleTexture.height && thisY + thisTexture.height > obstacleY)
+        {
+            List<PVector> toTest = obstacle.getTouchable();
+            for (int i = 0; i < toTest.size(); ++i)
+                toTest.set(i, PVector.add(toTest.get(i), new PVector(obstacleX, obstacleY)));
+            for (PVector thisV : getTouchable())
+            {
+                float x = thisV.x + thisX;
+                float y = thisV.y + thisY;
+                for (PVector obstacleV : toTest)
+                    if (x == obstacleV.x && y == obstacleY)
+                        return true;
+            }
+        }
+        return false;
     }
 
     @Override

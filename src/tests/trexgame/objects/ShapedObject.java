@@ -2,6 +2,9 @@ package tests.trexgame.objects;
 
 import tests.trexgame.Loader;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import engine.base.GameObject;
 
 import engine.graphics.Window;
@@ -12,6 +15,8 @@ import processing.core.PVector;
 
 public class ShapedObject extends GameObject
 {
+    protected List<PVector>[] touchables;
+    protected List<PVector> touchable;
     protected PShape[] texturedMeshs;
     protected PShape texturedMesh;
     protected PVector position;
@@ -70,6 +75,11 @@ public class ShapedObject extends GameObject
         return texture;
     }
 
+    public List<PVector> getTouchable()
+    {
+        return new ArrayList<>(touchable);
+    }
+
     @Override
     public void setup()
     {
@@ -77,6 +87,7 @@ public class ShapedObject extends GameObject
         Loader loader = getGame().getResource(Loader.class);
         
         textures = loader.get(getNames());
+        touchables = new List[textures.length];
         texturedMeshs = new PShape[textures.length];
 
         for (int i = 0; i < textures.length; ++i)
@@ -88,10 +99,25 @@ public class ShapedObject extends GameObject
             );
             texturedMesh.setTexture(texture);
             texturedMeshs[i] = texturedMesh;
+
+            texture.loadPixels();
+            List<PVector> touchable = new ArrayList<>();
+            for (int j = 0; j < texture.height; ++j)
+            {
+                int y = j * texture.width;
+                for (int x = 0; x < texture.width; ++x)
+                {
+                    int color = texture.pixels[y + x];
+                    if (window.red(color) == 83 && window.green(color) == 83 && window.blue(color) == 83)
+                        touchable.add(new PVector(x, j));
+                }
+            }
+            touchables[i] = touchable;
         }
         
         int animationIndex = getAnimationIndex();
         texturedMesh = texturedMeshs[animationIndex];
+        touchable = touchables[animationIndex];
         texture = textures[animationIndex];
     }
 
@@ -103,6 +129,7 @@ public class ShapedObject extends GameObject
             animation = 0;
         int animationIndex = getAnimationIndex();
         texturedMesh = texturedMeshs[animationIndex];
+        touchable = touchables[animationIndex];
         texture = textures[animationIndex];
     }
 }
