@@ -29,7 +29,7 @@ public class NeuralNetwork implements GeneticInformation
     }
 
     @Override
-    public double[] get(double[] input)
+    public double[] get(double... input)
     {
         Matrix output = get(Matrix.from(input));
         return output.toArray(new double[output.size()]);

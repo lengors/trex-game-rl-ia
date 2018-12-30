@@ -26,9 +26,10 @@ public class MainState extends GameState
                 getGame().removeGameObject(obstacle);
         if (obstacles.size() > 0)
         {
+            Obstacle obstacle = obstacles.get(0);
             List<TrexObject> trexs = getGame().getGameObjects(TrexObject.class);
             for (TrexObject trex : trexs)
-                if (trex.collides(obstacles.get(0)))
+                if (trex.collides(obstacle))
                     getGame().removeGameObject(trex);
         }
         return this;

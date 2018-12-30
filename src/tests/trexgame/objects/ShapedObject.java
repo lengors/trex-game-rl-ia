@@ -52,6 +52,11 @@ public class ShapedObject extends GameObject
         return groundPosition - (int) (getTexture().height / 2) + 5;
     }
 
+    public int getHeight()
+    {
+        return texture.height;
+    }
+
     public String[] getNames()
     {
         return new String[]
@@ -78,6 +83,11 @@ public class ShapedObject extends GameObject
     public List<PVector> getTouchable()
     {
         return new ArrayList<>(touchable);
+    }
+
+    public int getWidth()
+    {
+        return texture.width;
     }
 
     @Override

@@ -14,10 +14,15 @@ public class TrexObject extends BaseObject implements Observer
 {
     private Action action = (TrexObject trex) -> { };
     private int offset = 0, length = 2;
+    private Caller caller;
+
+    public TrexObject(Caller caller)
+    {
+        this.caller = caller;
+    }
 
     public TrexObject()
     {
-        position = new PVector();
     }
 
     public boolean collides(Obstacle obstacle)
@@ -66,6 +71,14 @@ public class TrexObject extends BaseObject implements Observer
         };
     }
 
+    public Obstacle getObstacle()
+    {
+        List<Obstacle> obstacles = getGame().getGameObjects(Obstacle.class);
+        if (obstacles.size() > 0)
+            return obstacles.get(0);
+        return null;
+    }
+
     @Override
     public void setup()
     {
@@ -76,6 +89,7 @@ public class TrexObject extends BaseObject implements Observer
     @Override
     public void update()
     {
+        action = caller.call(this);
         action.apply(this);
         if (acceleration.y > 0 && position.y >= getGroundPosition())
             length = offset = 2;
@@ -124,5 +138,10 @@ public class TrexObject extends BaseObject implements Observer
     public static interface Action
     {
         public void apply(TrexObject trex);
+    }
+
+    public static interface Caller
+    {
+        public Action call(TrexObject trex);
     }
 }

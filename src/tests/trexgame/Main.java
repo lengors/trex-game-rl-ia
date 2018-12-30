@@ -2,7 +2,15 @@ package tests.trexgame;
 
 import java.awt.event.KeyEvent;
 
+import engine.utils.Utils;
+
 import engine.graphics.Window;
+
+import engine.learning.NeuralNetwork;
+import engine.learning.genetic.Generation;
+import engine.learning.genetic.algorithms.DefaultGeneticBehavior;
+
+import engine.math.Matrix;
 
 import engine.listeners.KeyListener;
 
@@ -13,12 +21,14 @@ import tests.trexgame.objects.Ground;
 import tests.trexgame.objects.TrexObject;
 import tests.trexgame.objects.ShapedObject;
 
+import tests.trexgame.objects.obstacles.Obstacle;
+
 import processing.core.PShape;
 import processing.core.PVector;
 
 public class Main extends Window
 {
-    private Player player;
+    private Generation generation;
     private Loader loader;
     private Thread thread;
     private Game game;
@@ -34,12 +44,22 @@ public class Main extends Window
         Ground ground = new Ground();
         game.addGameObject(ground);
 
-        // Creates a trex in the game
-        TrexObject[] trexs = new TrexObject[2];
-        for (int i = 0; i < trexs.length; ++i)
-            game.addGameObject(trexs[i] = new TrexObject());
-        // Binds observers to observables
-        player.addObserver(trexs[0]);
+        for (NeuralNetwork gi : generation.<NeuralNetwork>information())
+            game.addGameObject(new TrexObject((TrexObject trex) ->
+            {
+                Obstacle obstacle = trex.getObstacle();
+                if (obstacle != null)
+                {
+                    PVector vector = PVector.sub(obstacle.getPosition(), trex.getPosition());
+                    double[] output = gi.get(vector.x, vector.y, obstacle.getWidth(), obstacle.getHeight());
+                    int max = Utils.max(output);
+                    if (max == 0)
+                        return (TrexObject.Action) TrexObject::jump;
+                    else if (max == 1)
+                        return (TrexObject.Action) TrexObject::down;
+                }
+                return (TrexObject.Action) (TrexObject t) -> { };
+            }));
 
         // starts game
         thread = game.makeThreadable();
@@ -52,9 +72,11 @@ public class Main extends Window
     @Override
     public void setup()
     {
+        generation = new Generation(20, 0.001);
+        generation.initialize((int index) -> new NeuralNetwork(4, 3).map(Matrix.RANDOMIZE));
+
         surface.setVisible(true);
         loader = new Loader(this);
-        addListener(player = new Player());
         newGame();
         fill(0);
     }
@@ -79,7 +101,6 @@ public class Main extends Window
         {
             try
             {
-                player.removeObserver(0);
                 game.stop();
                 thread.join();
             }
@@ -111,7 +132,7 @@ public class Main extends Window
     	Window.build(Main.class, 800, 480);
     }
 
-    public static class Player extends DefaultObservable implements KeyListener
+    /*public static class Player extends DefaultObservable implements KeyListener
     {
         private int pressedKeyCode;
 
@@ -136,5 +157,5 @@ public class Main extends Window
                 pressedKeyCode = -1;
             }
         }
-    }
+    }*/
 }
