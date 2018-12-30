@@ -110,9 +110,12 @@ public class Game extends DefaultListener implements Runnable
 	public <T extends GameObject> List<T> getGameObjects(Class<T> gameObjectClass)
     {
         List<T> specializedGameObjects = new ArrayList<>();
-        for (GameObject gameObject : gameObjects)
+        for (int i = 0; i < gameObjects.size(); ++i)
+        {
+            GameObject gameObject = gameObjects.get(i);
             if (gameObjectClass.isAssignableFrom(gameObject.getClass()))
                 specializedGameObjects.add((T) gameObject);
+        }
         return specializedGameObjects;
     }
 
