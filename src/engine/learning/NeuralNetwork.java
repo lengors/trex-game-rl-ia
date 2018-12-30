@@ -37,9 +37,8 @@ public class NeuralNetwork implements GeneticInformation
 
     public Matrix get(Matrix output)
     {
-        output.addRow(1);
         for (Matrix matrix : weights)
-            output = Matrix.dot(matrix, output).map(activationFunction).addRow(1);
+            output = Matrix.dot(matrix, output.addRow(1)).map(activationFunction);
         return output;
     }
 
@@ -80,7 +79,7 @@ public class NeuralNetwork implements GeneticInformation
     {
         String string = "";
         for (int i = 0; i < weights.length; ++i)
-            string += weights[i] + (i == weights.length - 1 ? "\n" : "");
+            string += weights[i] + (i == weights.length - 1 ? "" : "\n\n");
         return string;
     }
 }

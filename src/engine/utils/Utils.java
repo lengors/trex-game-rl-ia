@@ -6,7 +6,7 @@ public class Utils
     {
         int index = 0;
         for (int i = 1; i < input.length; ++i)
-            index = input[index] > input[i] ? i : index;
+            index = input[index] < input[i] ? i : index;
         return index;
     }
 }

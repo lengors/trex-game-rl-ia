@@ -84,7 +84,7 @@ public class Main extends Window
     public void setup()
     {
         generation = new Generation(30, 0.01, 0.01);
-        generation.initialize((int index) -> new NeuralNetwork(6, 3).map(Matrix.RANDOMIZE));
+        generation.initialize((int index) -> new NeuralNetwork(6, 4, 3).map(Matrix.RANDOMIZE));
         surface.setVisible(true);
         loader = new Loader(this);
         newGame();
