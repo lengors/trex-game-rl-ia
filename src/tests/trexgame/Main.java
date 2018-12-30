@@ -18,6 +18,7 @@ import processing.core.PVector;
 
 public class Main extends Window
 {
+    private Player player;
     private Loader loader;
     private Thread thread;
     private Game game;
@@ -34,18 +35,11 @@ public class Main extends Window
         game.addGameObject(ground);
 
         // Creates a trex in the game
-        TrexObject trex = new TrexObject();
-        game.addGameObject(trex);
-        
-        // Creates player
-        Player player = new Player();
-        
+        TrexObject[] trexs = new TrexObject[2];
+        for (int i = 0; i < trexs.length; ++i)
+            game.addGameObject(trexs[i] = new TrexObject());
         // Binds observers to observables
-        player.addObserver(trex);
-        
-        // Binds listeners this window
-        addListener(player);
-        addListener(game);
+        player.addObserver(trexs[0]);
 
         // starts game
         thread = game.makeThreadable();
@@ -60,8 +54,9 @@ public class Main extends Window
     {
         surface.setVisible(true);
         loader = new Loader(this);
-        fill(0);
+        addListener(player = new Player());
         newGame();
+        fill(0);
     }
 
     @Override
@@ -84,6 +79,7 @@ public class Main extends Window
         {
             try
             {
+                player.removeObserver(0);
                 game.stop();
                 thread.join();
             }
