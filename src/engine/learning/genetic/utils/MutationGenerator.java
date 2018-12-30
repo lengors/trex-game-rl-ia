@@ -14,7 +14,7 @@ public abstract class MutationGenerator implements Generator<Matrix.Map>
         public Matrix.Map next()
         {
             return (double weight) -> getRandomGenerator().next() < getMutationRate()
-                    ? weight + getRandomGenerator().next() * 2 - 1
+                    ? weight + getRandomGenerator().next() * getMutationInterval() - 1
                     : weight;
         }
     };
@@ -24,12 +24,14 @@ public abstract class MutationGenerator implements Generator<Matrix.Map>
         @Override
         public Matrix.Map next()
         {
-            return (double weight) -> weight + getRandomGenerator().next() * getMutationRate();
+            return (double weight) -> getRandomGenerator().next() < getMutationRate()
+                                    ? weight + getRandomGenerator().next() * getMutationInterval() - 1
+                                    : weight;
         }
     };
 
+    private double mutationRate, mutationInterval;
     private Generator<Double> randomGenerator;
-    private double mutationRate;
 
     public MutationGenerator(Generator<Double> randomGenerator)
     {
@@ -46,8 +48,18 @@ public abstract class MutationGenerator implements Generator<Matrix.Map>
         return mutationRate;
     }
 
+    public double getMutationInterval()
+    {
+        return mutationInterval;
+    }
+
     public void setMutationRate(double mutationRate)
     {
         this.mutationRate = mutationRate;
+    }
+
+    public void setMutationInterval(double mutationInterval)
+    {
+        this.mutationInterval = mutationInterval;
     }
 }

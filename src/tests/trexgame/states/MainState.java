@@ -2,7 +2,12 @@ package tests.trexgame.states;
 
 import engine.base.GameState;
 
+import engine.learning.NeuralNetwork;
+
+import tests.trexgame.objects.Ground;
 import tests.trexgame.objects.TrexObject;
+
+import tests.trexgame.Main.NetworkSelection;
 
 import tests.trexgame.objects.obstacles.Obstacle;
 
@@ -13,6 +18,7 @@ public class MainState extends GameState
     @Override
     public GameState update()
     {
+        Ground ground = getGame().getGameObjects(Ground.class).get(0);
         List<Obstacle> obstacles = getGame().getGameObjects(Obstacle.class);
         int counter = obstacles.size();
         while (counter++ < 2)
@@ -27,10 +33,17 @@ public class MainState extends GameState
         if (obstacles.size() > 0)
         {
             Obstacle obstacle = obstacles.get(0);
+            NetworkSelection ns = getGame().getResource(NetworkSelection.class);
             List<TrexObject> trexs = getGame().getGameObjects(TrexObject.class);
-            for (TrexObject trex : trexs)
+            for (int i = 0; i < trexs.size(); ++i)
+            {
+                TrexObject trex = trexs.get(i);
                 if (trex.collides(obstacle))
+                {
                     getGame().removeGameObject(trex);
+                    ns.setScore(trex.get(NeuralNetwork.class), ground.getScore());
+                }
+            }
         }
         return this;
     }

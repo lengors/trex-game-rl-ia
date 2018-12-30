@@ -1,5 +1,8 @@
 package tests.trexgame.objects;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import engine.base.Observer;
 import engine.base.Observable;
 
@@ -12,6 +15,8 @@ import java.util.List;
 
 public class TrexObject extends BaseObject implements Observer
 {
+    private Map<Class<?>, Object> objects = new HashMap<>();
+
     private Action action = (TrexObject trex) -> { };
     private int offset = 0, length = 2;
     private Caller caller;
@@ -23,6 +28,12 @@ public class TrexObject extends BaseObject implements Observer
 
     public TrexObject()
     {
+    }
+
+    public TrexObject bind(Object object)
+    {
+        objects.put(object.getClass(), object);
+        return this;
     }
 
     public boolean collides(Obstacle obstacle)
@@ -48,6 +59,11 @@ public class TrexObject extends BaseObject implements Observer
             }
         }
         return false;
+    }
+
+    public <T> T get(Class<T> clazz)
+    {
+        return (T) objects.get(clazz);
     }
 
     @Override

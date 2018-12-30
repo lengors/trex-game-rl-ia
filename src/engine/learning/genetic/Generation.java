@@ -7,28 +7,26 @@ import engine.learning.genetic.algorithms.DefaultGeneticBehavior;
 
 public class Generation
 {
+    private double mutationRate, mutationInterval;
     private GeneticBehavior geneticBehavior;
     private GeneticInformation[] generation;
-    private double mutationRate;
 
-    public Generation(int amount, double mutationRate, GeneticBehavior geneticBehavior)
+    public Generation(int amount, double mutationRate, double mutationInterval, GeneticBehavior geneticBehavior)
     {
         generation = new GeneticInformation[amount];
+        this.mutationInterval = mutationInterval;
         this.geneticBehavior = geneticBehavior;
         this.mutationRate = mutationRate;
     }
 
-    public Generation(int amount, double mutationRate)
+    public Generation(int amount, double mutationRate, double mutationInterval)
     {
-        this(amount, mutationRate, new DefaultGeneticBehavior());
+        this(amount, mutationRate, mutationInterval, new DefaultGeneticBehavior());
     }
 
-    public <T> List<T> information()
+    public GeneticInformation[] information()
     {
-        List<T> result = new ArrayList<>(generation.length);
-        for (GeneticInformation info : generation)
-            result.add((T) info);
-        return result;
+        return generation;
     }
 
     public GeneticInformation[] initialize(Initializer initializer)
@@ -45,7 +43,7 @@ public class Generation
         for (int i = 0; i < nextGeneration.length; )
         {
             GeneticInformation information = geneticBehavior.crossover();
-            geneticBehavior.mutate(information, mutationRate);
+            geneticBehavior.mutate(information, mutationRate, mutationInterval);
             nextGeneration[i++] = information;
         }
         generation = nextGeneration;

@@ -20,8 +20,8 @@ import engine.math.Matrix;
 public class DefaultGeneticBehavior implements GeneticBehavior
 {
     private List<Pair<Double, GeneticInformation>> generation = new ArrayList<>();
+    private UniformGenerator random = new UniformGenerator();
     private MutationGenerator generator;
-    private UniformGenerator random;
 
     public DefaultGeneticBehavior(MutationGenerator generator) {
         this.generator = generator;
@@ -56,9 +56,10 @@ public class DefaultGeneticBehavior implements GeneticBehavior
     }
 
     @Override
-    public void mutate(GeneticInformation information, double mutationRate)
+    public void mutate(GeneticInformation information, double mutationRate, double mutationInterval)
     {
         generator.setMutationRate(mutationRate);
+        generator.setMutationInterval(mutationInterval);
         Matrix.Map map = generator.next();
         NeuralNetwork network = (NeuralNetwork) information;
         for (Matrix matrix : network.get())
@@ -81,7 +82,7 @@ public class DefaultGeneticBehavior implements GeneticBehavior
         {
             Matrix matrix = network.get(i);
             for (int j = 0; j < matrix.size(); ++j)
-                matrix.set(i, random.next() < probabilityP1 ? n1.get(i).get(j) : n2.get(i).get(j));
+                matrix.set(j, random.next() < probabilityP1 ? n1.get(i).get(j) : n2.get(i).get(j));
         }
         return network;
     }

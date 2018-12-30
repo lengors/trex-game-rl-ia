@@ -1,13 +1,17 @@
 package tests.trexgame;
 
-import java.awt.event.KeyEvent;
+import java.util.Map;
+import java.util.HashMap;
 
 import engine.utils.Utils;
 
 import engine.graphics.Window;
 
 import engine.learning.NeuralNetwork;
+
 import engine.learning.genetic.Generation;
+import engine.learning.genetic.SelectiveFunction;
+import engine.learning.genetic.GeneticInformation;
 import engine.learning.genetic.algorithms.DefaultGeneticBehavior;
 
 import engine.math.Matrix;
@@ -26,8 +30,11 @@ import tests.trexgame.objects.obstacles.Obstacle;
 import processing.core.PShape;
 import processing.core.PVector;
 
+import processing.event.KeyEvent;
+
 public class Main extends Window
 {
+    private NetworkSelection ns = new NetworkSelection();
     private Generation generation;
     private Loader loader;
     private Thread thread;
@@ -37,21 +44,25 @@ public class Main extends Window
     {
         // Creates trex-game
         game = new TrexGame();
+        game.setUPS(120);
 
+        game.addResource(ns);
         game.addResource(loader);
         game.addResource(Window.class, this);
 
         Ground ground = new Ground();
         game.addGameObject(ground);
 
-        for (NeuralNetwork gi : generation.<NeuralNetwork>information())
+        for (GeneticInformation gi : generation.information())
             game.addGameObject(new TrexObject((TrexObject trex) ->
             {
                 Obstacle obstacle = trex.getObstacle();
+                NeuralNetwork nn = trex.get(NeuralNetwork.class);
                 if (obstacle != null)
                 {
-                    PVector vector = PVector.sub(obstacle.getPosition(), trex.getPosition());
-                    double[] output = gi.get(vector.x, vector.y, obstacle.getWidth(), obstacle.getHeight());
+                    PVector position = trex.getPosition();
+                    PVector vector = PVector.sub(obstacle.getPosition(), position);
+                    double[] output = gi.get(new double[] { ground.getSpeed(), position.y, vector.x, vector.y, obstacle.getWidth(), obstacle.getHeight() });
                     int max = Utils.max(output);
                     if (max == 0)
                         return (TrexObject.Action) TrexObject::jump;
@@ -59,7 +70,7 @@ public class Main extends Window
                         return (TrexObject.Action) TrexObject::down;
                 }
                 return (TrexObject.Action) (TrexObject t) -> { };
-            }));
+            }).bind(gi));
 
         // starts game
         thread = game.makeThreadable();
@@ -72,13 +83,35 @@ public class Main extends Window
     @Override
     public void setup()
     {
-        generation = new Generation(20, 0.001);
-        generation.initialize((int index) -> new NeuralNetwork(4, 3).map(Matrix.RANDOMIZE));
-
+        generation = new Generation(30, 0.01, 0.01);
+        generation.initialize((int index) -> new NeuralNetwork(6, 3).map(Matrix.RANDOMIZE));
         surface.setVisible(true);
         loader = new Loader(this);
         newGame();
         fill(0);
+
+        addListener(new KeyListener()
+        {
+            @Override
+            public void onKeyPress(KeyEvent event)
+            {
+                if (event.getKeyCode() == 's' || event.getKeyCode() == 'S')
+                {
+                    GeneticInformation[] infos = generation.information();
+                    for (int i = 0; i < infos.length; ++i)
+                    {
+                        System.out.printf("NN %d:\n", i);
+                        System.out.println(infos[i]);
+                    }
+                }
+            }
+
+            @Override
+            public void onKeyRelease(KeyEvent event)
+            {
+
+            }
+        });
     }
 
     @Override
@@ -103,6 +136,8 @@ public class Main extends Window
             {
                 game.stop();
                 thread.join();
+                generation = generation.next(ns);
+                ns.clear();
             }
             catch (InterruptedException e)
             {
@@ -129,33 +164,27 @@ public class Main extends Window
 
     public static void main(String[] args)
     {
-    	Window.build(Main.class, 800, 480);
+        Window.build(Main.class, 800, 480);
     }
 
-    /*public static class Player extends DefaultObservable implements KeyListener
+    public static class NetworkSelection implements SelectiveFunction
     {
-        private int pressedKeyCode;
+        private Map<GeneticInformation, Integer> scores = new HashMap<>();
 
-        @Override
-        public void onKeyPress(processing.event.KeyEvent event)
+        public void clear()
         {
-            if (event.getKeyCode() == KeyEvent.VK_SPACE || event.getKeyCode() == KeyEvent.VK_UP)
-                dispatch((TrexObject.Action) TrexObject::jump);
-            else if (event.getKeyCode() == KeyEvent.VK_DOWN)
-                dispatch((TrexObject.Action) TrexObject::down);
-            else
-                return;
-            pressedKeyCode = event.getKeyCode();
+            scores.clear();
         }
 
         @Override
-        public void onKeyRelease(processing.event.KeyEvent event)
+        public double fitness(GeneticInformation gi)
         {
-            if (event.getKeyCode() == pressedKeyCode)
-            {
-                dispatch((TrexObject.Action) (TrexObject trex) -> { });
-                pressedKeyCode = -1;
-            }
+            return scores.get(gi);
         }
-    }*/
+
+        public void setScore(GeneticInformation gi, int score)
+        {
+            scores.put(gi, score);
+        }
+    }
 }

@@ -38,4 +38,10 @@ public class Pair<T, U>
         this.value = value;
         return this;
     }
+
+    @Override
+    public String toString()
+    {
+        return key + ": " + value;
+    }
 }

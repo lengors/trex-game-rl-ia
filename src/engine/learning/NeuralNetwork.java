@@ -56,9 +56,10 @@ public class NeuralNetwork implements GeneticInformation
     public int[] layers()
     {
         int[] layers = new int[weights.length + 1];
-        layers[0] = weights[0].getHeight();
-        for (int i = 0; i < weights.length; ++i)
-            layers[i + 1] = weights[i].getWidth();
+        layers[0] = weights[0].getWidth() - 1;
+        for (int i = 1; i < weights.length; ++i)
+            layers[i] = weights[i].getWidth() - 1;
+        layers[weights.length] = weights[weights.length - 1].getHeight();
         return layers;
     }
 
@@ -72,5 +73,14 @@ public class NeuralNetwork implements GeneticInformation
     public int size()
     {
         return weights.length;
+    }
+
+    @Override
+    public String toString()
+    {
+        String string = "";
+        for (int i = 0; i < weights.length; ++i)
+            string += weights[i] + (i == weights.length - 1 ? "\n" : "");
+        return string;
     }
 }
