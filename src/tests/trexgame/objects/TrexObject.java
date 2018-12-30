@@ -148,7 +148,7 @@ public class TrexObject extends BaseObject implements Observer
     public static void jump(TrexObject trex)
     {
         if (trex.position.y >= trex.getGroundPosition())
-            trex.acceleration.sub(0, 11);
+            trex.acceleration.sub(0, 10);
     }
 
     public static interface Action

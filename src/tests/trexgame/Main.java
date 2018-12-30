@@ -1,6 +1,7 @@
 package tests.trexgame;
 
 import java.util.Map;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import engine.utils.Utils;
@@ -26,7 +27,7 @@ import tests.trexgame.objects.TrexObject;
 import tests.trexgame.objects.ShapedObject;
 
 import tests.trexgame.objects.obstacles.Obstacle;
-
+import tests.trexgame.objects.obstacles.Pterodactyl;
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -56,13 +57,17 @@ public class Main extends Window
         for (GeneticInformation gi : generation.information())
             game.addGameObject(new TrexObject((TrexObject trex) ->
             {
-                Obstacle obstacle = trex.getObstacle();
-                NeuralNetwork nn = trex.get(NeuralNetwork.class);
+                Obstacle obstacle = ((TrexGame) trex.getGame()).getObstacle();
                 if (obstacle != null)
                 {
+                    NeuralNetwork nn = trex.get(NeuralNetwork.class);
                     PVector position = trex.getPosition();
                     PVector vector = PVector.sub(obstacle.getPosition(), position);
-                    double[] output = gi.get(new double[] { ground.getSpeed(), position.y, vector.x, vector.y, obstacle.getWidth(), obstacle.getHeight() });
+                    double[] input;
+                    double[] output = gi.get(input = new double[]
+                    {
+                        ground.getSpeed(), trex.getGroundPosition() - position.y, vector.x, -vector.y, obstacle.getWidth(), obstacle.getHeight()
+                    });
                     int max = Utils.max(output);
                     if (max == 0)
                         return (TrexObject.Action) TrexObject::jump;
@@ -130,6 +135,16 @@ public class Main extends Window
             }
             shape(shape, position.x, position.y);
         }
+        
+        Obstacle obstacle = ((TrexGame) game).getObstacle();
+        if (obstacle != null)
+        {
+            noFill();
+            stroke(255, 0, 0);
+            rect(obstacle.getPosition().x - obstacle.getWidth() / 2, obstacle.getPosition().y - obstacle.getHeight() / 2, obstacle.getWidth(), obstacle.getHeight());
+            fill(0);
+        }
+
         if (game.getGameObjects(TrexObject.class).size() == 0)
         {
             try

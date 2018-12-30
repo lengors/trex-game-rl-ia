@@ -8,7 +8,7 @@ public class Pterodactyl extends Obstacle
 {
     private static int[] positions = new int[]
     {
-        10, 40, 60
+        10, 40, 70
     };
     private static Random random = new Random();
 
