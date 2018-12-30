@@ -38,7 +38,7 @@ public class TrexObject extends BaseObject implements Observer
                 float x = thisV.x + thisX;
                 float y = thisV.y + thisY;
                 for (PVector obstacleV : toTest)
-                    if (x == obstacleV.x && y == obstacleY)
+                    if (x == obstacleV.x && y == obstacleV.y)
                         return true;
             }
         }
