@@ -27,7 +27,10 @@ public class Game extends DefaultListener implements Runnable
         {
             @SuppressWarnings("unchecked")
 			T gameObject = (T) gameObjectClass.getConstructor().newInstance().setGame(this);
-            gameObjects.add(gameObject);
+            synchronized (gameObjects)
+            {
+                gameObjects.add(gameObject);
+            }
             return gameObject;
         }
         catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
@@ -39,7 +42,11 @@ public class Game extends DefaultListener implements Runnable
 
     public Game addGameObject(GameObject gameObject)
     {
-        gameObjects.add(gameObject.setGame(this));
+        gameObject.setGame(this);
+        synchronized (gameObjects)
+        {
+            gameObjects.add(gameObject.setGame(this));
+        }
         return this;
     }
 
@@ -47,7 +54,11 @@ public class Game extends DefaultListener implements Runnable
     {
         if (gameState != null)
         {
-            gameStates.put(gameState.getName(), gameState.setGame(this));
+            gameState.setGame(this);
+            synchronized (gameStates)
+            {
+                gameStates.put(gameState.getName(), gameState);
+            }
             if (this.gameState == null)
                 this.gameState = gameState;
             return true;
@@ -57,10 +68,13 @@ public class Game extends DefaultListener implements Runnable
 
     public Game addResource(Class<?> resourceClass, Object resource)
     {
-        List<Object> list = resources.get(resourceClass);
-        if (list == null)
-            resources.put(resourceClass, list = new ArrayList<>());
-        list.add(resource);
+        synchronized (resources)
+        {
+            List<Object> list = resources.get(resourceClass);
+            if (list == null)
+                resources.put(resourceClass, list = new ArrayList<>());
+            list.add(resource);
+        }
         return this;
     }
 
@@ -71,11 +85,14 @@ public class Game extends DefaultListener implements Runnable
 
     public Game addResources(Class<?> resourceClass, Object... rs)
     {
-        List<Object> list = resources.get(resourceClass);
-        if (list == null)
-            resources.put(resourceClass, list = new ArrayList<>());
-        for (Object resource : rs)
-            list.add(resource);
+        synchronized (resources)
+        {
+            List<Object> list = resources.get(resourceClass);
+            if (list == null)
+                resources.put(resourceClass, list = new ArrayList<>());
+            for (Object resource : rs)
+                list.add(resource);
+        }
         return this;
     }
 
@@ -88,40 +105,68 @@ public class Game extends DefaultListener implements Runnable
 
     public GameObject getGameObject(int index)
     {
-        return gameObjects.get(index);
+        GameObject go;
+        synchronized (gameObjects)
+        {
+            go = gameObjects.get(index); 
+        }
+        return go;
     }
 
     public int getGameObjectCount()
     {
-        return gameObjects.size();
+        int size;
+        synchronized (gameObjects)
+        {
+            size = gameObjects.size();
+        }
+        return size;
     }
 
     public int getGameObjectIndex(GameObject gameObject)
     {
-        return gameObjects.indexOf(gameObject);
+        int index;
+        synchronized (gameObjects)
+        {
+            index = gameObjects.indexOf(gameObject);
+        }
+        return index;
     }
 
     public List<GameObject> getGameObjects()
     {
-        return new ArrayList<>(gameObjects);
+        List<GameObject> gos;
+        synchronized (gameObjects)
+        {
+            gos = new ArrayList<>(gameObjects);
+        }
+        return gos;
     }
 
     @SuppressWarnings("unchecked")
 	public <T extends GameObject> List<T> getGameObjects(Class<T> gameObjectClass)
     {
         List<T> specializedGameObjects = new ArrayList<>();
-        for (int i = 0; i < gameObjects.size(); ++i)
+        synchronized (gameObjects)
         {
-            GameObject gameObject = gameObjects.get(i);
-            if (gameObjectClass.isAssignableFrom(gameObject.getClass()))
-                specializedGameObjects.add((T) gameObject);
+            for (int i = 0; i < gameObjects.size(); ++i)
+            {
+                GameObject gameObject = gameObjects.get(i);
+                if (gameObjectClass.isAssignableFrom(gameObject.getClass()))
+                    specializedGameObjects.add((T) gameObject);
+            }
         }
         return specializedGameObjects;
     }
 
     public GameState getGameState(String name)
     {
-        return gameStates.get(name);
+        GameState gs;
+        synchronized(gameStates)
+        {
+            gs = gameStates.get(name);
+        }
+        return gs;
     }
 
     public GameState getGameState()
@@ -131,18 +176,33 @@ public class Game extends DefaultListener implements Runnable
 
     public int getGameStateCount()
     {
-        return gameStates.size();
+        int size;
+        synchronized (gameStates)
+        {
+            size = gameStates.size();
+        }
+        return size;
     }
 
     public List<GameState> getGameStates()
     {
-        return new ArrayList<>(gameStates.values());
+        List<GameState> gss;
+        synchronized (gameStates)
+        {
+            gss = new ArrayList<>(gameStates.values());
+        }
+        return gss;
     }
 
     @SuppressWarnings("unchecked")
 	public <T> T getResource(Class<T> resourceClass, int index)
     {
-        return (T) resources.get(resourceClass).get(index);
+        T value;
+        synchronized (resources)
+        {
+            value = (T) resources.get(resourceClass).get(index);
+        }
+        return value;
     }
 
     public <T> T getResource(Class<T> resourceClass)
@@ -153,18 +213,25 @@ public class Game extends DefaultListener implements Runnable
     @SuppressWarnings("unchecked")
 	public <T> List<T> getResources(Class<T> resourcesClass)
     {
-        List<Object> list = resources.get(resourcesClass);
-        List<T> result = new ArrayList<>(list.size());
-        for (Object object : list)
-            result.add((T) object);
+        List<T> result;
+        synchronized (resources)
+        {
+            List<Object> list = resources.get(resourcesClass);
+            result = new ArrayList<>(list.size());
+            for (Object object : list)
+                result.add((T) object);
+        }
         return result;
     }
 
     public List<Object> getResources()
     {
         List<Object> rs = new ArrayList<>();
-        for (List<Object> list : resources.values())
-            rs.addAll(list);
+        synchronized (resources)
+        {
+            for (List<Object> list : resources.values())
+                rs.addAll(list);
+        }
         return rs;
     }
 
@@ -178,13 +245,17 @@ public class Game extends DefaultListener implements Runnable
         return new Thread(this);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T popResource(Class<T> resourceClass, int index)
     {
-        List<Object> rs = resources.get(resourceClass);
-        @SuppressWarnings("unchecked")
-		T resource = (T) rs.remove(index);
-        if (rs.size() == 0)
-            resources.remove(resourceClass);
+        T resource;
+        synchronized (resources)
+        {
+            List<Object> rs = resources.get(resourceClass);
+		    resource = (T) rs.remove(index);
+            if (rs.size() == 0)
+                resources.remove(resourceClass);
+        }
         return resource;
     }
     
@@ -195,12 +266,21 @@ public class Game extends DefaultListener implements Runnable
 
     public GameObject removeGameObject(int index)
     {
-        return gameObjects.remove(index).setGame(null);
+        GameObject go;
+        synchronized (gameObjects)
+        {
+            go = gameObjects.remove(index);
+        }
+        return go.setGame(null);
     }
 
     public boolean removeGameObject(GameObject gameObject)
     {
-        boolean returnValue = gameObjects.remove(gameObject);
+        boolean returnValue;
+        synchronized (gameObjects)
+        {
+            returnValue = gameObjects.remove(gameObject);
+        }
         if (returnValue)
             gameObject.setGame(null);
         return returnValue;
@@ -208,14 +288,24 @@ public class Game extends DefaultListener implements Runnable
 
     public GameState removeGameState(String name)
     {
-        return gameStates.remove(name).setGame(null);
+        GameState gs;
+        synchronized (gameStates)
+        {
+            gs = gameStates.remove(name);
+        }
+        return gs.setGame(null);
     }
 
     public boolean removeGameState(GameState gameState)
     {
         if (gameState != null)
         {
-            boolean returnValue = gameStates.remove(gameState.getName()) == gameState;
+            GameState gs;
+            synchronized (gameStates)
+            {
+                gs = gameStates.remove(gameState.getName());
+            }
+            boolean returnValue = gs == gameState;
             if (returnValue)
                 gameState.setGame(null);
             return returnValue;
@@ -226,24 +316,31 @@ public class Game extends DefaultListener implements Runnable
     @SuppressWarnings("unchecked")
 	public <T> List<T> removeResources(Class<T> resourcesClass)
     {
-        List<Object> list = resources.remove(resourcesClass);
-        List<T> result = new ArrayList<>(list.size());
-        for (Object object : list)
-            result.add((T) object);
+        List<T> result;
+        synchronized (resources)
+        {
+            List<Object> list = resources.remove(resourcesClass);
+            result = new ArrayList<>(list.size());
+            for (Object object : list)
+                result.add((T) object);
+        }
         return result;
     }
 
     public boolean removeResource(Object resource)
     {
-        List<Object> rs = resources.get(resource.getClass());
-        if (rs != null)
+        boolean returnValue = false;
+        synchronized (resources)
         {
-            boolean returnValue = rs.remove(resource);
-            if (rs.size() == 0)
-                resources.remove(resource.getClass());
-            return returnValue;
+            List<Object> rs = resources.get(resource.getClass());
+            if (rs != null)
+            {
+                returnValue = rs.remove(resource);
+                if (rs.size() == 0)
+                    resources.remove(resource.getClass());
+            }
         }
-        return false;
+        return returnValue;
     }
 
     @Override
@@ -264,8 +361,11 @@ public class Game extends DefaultListener implements Runnable
             while (delta >= 1)
             {
                 gameState = gameState.update();
-                for (GameObject gameObject : gameObjects)
-                    gameObject.update();
+                synchronized (gameObjects)
+                {
+                    for (GameObject gameObject : gameObjects)
+                        gameObject.update();
+                }
                 --delta;
             }
             lastTime = now;

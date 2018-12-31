@@ -1,6 +1,8 @@
 package engine.learning.genetic.algorithms;
 
+import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -37,14 +39,22 @@ public class DefaultGeneticBehavior implements GeneticBehavior
     {
         double total = 0;
         this.generation.clear();
+        Map<Double, Integer> fitnessScores = new HashMap<>();
         for (GeneticInformation information : generation)
         {
             double fitness = function.fitness(information);
             this.generation.add(new Pair<>(fitness, information));
-            total += fitness;
+            Integer counter = fitnessScores.get(fitness);
+            if (counter != null)
+                fitnessScores.put(fitness, counter + 1);
+            else
+            {
+                total += fitness;
+                fitnessScores.put(fitness, 1);
+            }
         }
         for (Pair<Double, GeneticInformation> pair : this.generation)
-            pair.setKey(pair.getKey() / total);
+            pair.setKey(pair.getKey() / (total * fitnessScores.get(pair.getKey())));
         Collections.sort(this.generation, (Pair<Double, GeneticInformation> p1, Pair<Double, GeneticInformation> p2) ->
         {
             if (p1.getKey() < p2.getKey())
@@ -73,11 +83,9 @@ public class DefaultGeneticBehavior implements GeneticBehavior
         Pair<Double, GeneticInformation> p2 = random();
         NeuralNetwork n1 = (NeuralNetwork) p1.getValue();
         NeuralNetwork n2 = (NeuralNetwork) p2.getValue();
-
         double total = p1.getKey() + p2.getKey();
         double probabilityP1 = p1.getKey() / total;
         NeuralNetwork network = new NeuralNetwork(n1.layers());
-
         for (int i = 0; i < network.size(); ++i)
         {
             Matrix matrix = network.get(i);

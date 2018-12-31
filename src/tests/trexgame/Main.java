@@ -18,9 +18,12 @@ import engine.learning.genetic.algorithms.DefaultGeneticBehavior;
 import engine.math.Matrix;
 
 import engine.listeners.KeyListener;
+import engine.listeners.DefaultListener;
 
 import engine.base.Game;
 import engine.base.DefaultObservable;
+
+import tests.trexgame.states.MainState;
 
 import tests.trexgame.objects.Ground;
 import tests.trexgame.objects.TrexObject;
@@ -28,24 +31,28 @@ import tests.trexgame.objects.ShapedObject;
 
 import tests.trexgame.objects.obstacles.Obstacle;
 import tests.trexgame.objects.obstacles.Pterodactyl;
+
 import processing.core.PShape;
 import processing.core.PVector;
 
 import processing.event.KeyEvent;
+import processing.event.MouseEvent;
 
 public class Main extends Window
 {
     private NetworkSelection ns = new NetworkSelection();
     private Generation generation;
+    private Player player;
     private Loader loader;
     private Thread thread;
+    private int ups = 240;
     private Game game;
 
     public void newGame()
     {
         // Creates trex-game
         game = new TrexGame();
-        game.setUPS(120);
+        game.setUPS(240);
 
         game.addResource(ns);
         game.addResource(loader);
@@ -62,12 +69,7 @@ public class Main extends Window
                 {
                     NeuralNetwork nn = trex.get(NeuralNetwork.class);
                     PVector position = trex.getPosition();
-                    PVector vector = PVector.sub(obstacle.getPosition(), position);
-                    double[] input;
-                    double[] output = gi.get(input = new double[]
-                    {
-                        ground.getSpeed(), trex.getGroundPosition() - position.y, vector.x, -vector.y, obstacle.getWidth(), obstacle.getHeight()
-                    });
+                    double[] output = gi.get(Utils.normalize(ground.getSpeed(), trex.getGroundPosition() - position.y, obstacle.getPosition().x - position.x, obstacle.getGroundPosition() - obstacle.getPosition().y, obstacle.getWidth(), obstacle.getHeight()));
                     int max = Utils.max(output);
                     if (max == 0)
                         return (TrexObject.Action) TrexObject::jump;
@@ -76,6 +78,10 @@ public class Main extends Window
                 }
                 return (TrexObject.Action) (TrexObject t) -> { };
             }).bind(gi));
+
+        // TrexObject me = new TrexObject();
+        // game.addGameObject(me);
+        // player.addObserver(me);
 
         // starts game
         thread = game.makeThreadable();
@@ -88,14 +94,15 @@ public class Main extends Window
     @Override
     public void setup()
     {
-        generation = new Generation(30, 0.01, 0.01);
-        generation.initialize((int index) -> new NeuralNetwork(6, 4, 3).map(Matrix.RANDOMIZE));
+        // addListener(player = new Player());
+        generation = new Generation(100, 0.01, 0.01);
+        generation.initialize((int index) -> new NeuralNetwork(6, 3).map(Matrix.RANDOMIZE));
         surface.setVisible(true);
         loader = new Loader(this);
         newGame();
         fill(0);
 
-        addListener(new KeyListener()
+        addListener(new DefaultListener()
         {
             @Override
             public void onKeyPress(KeyEvent event)
@@ -109,12 +116,17 @@ public class Main extends Window
                         System.out.println(infos[i]);
                     }
                 }
+                else if (event.getKeyCode() == 'm' || event.getKeyCode() == 'M')
+                    System.out.println(MainState.getMaxScore());
             }
 
             @Override
-            public void onKeyRelease(KeyEvent event)
+            public void onMouseWheel(MouseEvent event)
             {
-
+                ups += event.getCount();
+                if (ups <= 0)
+                    ups = 1;
+                game.setUPS(ups);
             }
         });
     }
@@ -135,6 +147,8 @@ public class Main extends Window
             }
             shape(shape, position.x, position.y);
         }
+
+        text(ups, 10, 10 + textAscent() * 2 + textDescent());
         
         Obstacle obstacle = ((TrexGame) game).getObstacle();
         if (obstacle != null)
@@ -151,6 +165,7 @@ public class Main extends Window
             {
                 game.stop();
                 thread.join();
+                // player.removeObserver(0);
                 generation = generation.next(ns);
                 ns.clear();
             }
@@ -200,6 +215,33 @@ public class Main extends Window
         public void setScore(GeneticInformation gi, int score)
         {
             scores.put(gi, score);
+        }
+    }
+
+    public static class Player extends DefaultObservable implements KeyListener
+    {
+        private int keyPressedCode = 0;
+
+        @Override
+        public void onKeyPress(KeyEvent event)
+        {
+            if (event.getKeyCode() == java.awt.event.KeyEvent.VK_UP || event.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE)
+                dispatch((TrexObject.Action) TrexObject::jump);
+            else if (event.getKeyCode() == java.awt.event.KeyEvent.VK_DOWN)
+                dispatch((TrexObject.Action) TrexObject::down);
+            else
+                return;
+            keyPressedCode = event.getKeyCode();
+        }
+
+        @Override
+        public void onKeyRelease(KeyEvent event)
+        {
+            if (event.getKeyCode() == keyPressedCode)
+            {
+                dispatch((TrexObject.Action) (TrexObject trex) -> { });
+                keyPressedCode = 0;
+            }
         }
     }
 }

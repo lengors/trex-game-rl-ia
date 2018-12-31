@@ -15,10 +15,15 @@ import java.util.List;
 
 public class MainState extends GameState
 {
+    private static int maxScore = 0;
+
     @Override
     public GameState update()
     {
         Ground ground = getGame().getGameObjects(Ground.class).get(0);
+        int score = ground.getScore();
+        if (maxScore < score)
+            maxScore = score;
         List<Obstacle> obstacles = getGame().getGameObjects(Obstacle.class);
         int counter = obstacles.size();
         while (counter++ < 2)
@@ -41,10 +46,15 @@ public class MainState extends GameState
                 if (trex.collides(obstacle))
                 {
                     getGame().removeGameObject(trex);
-                    ns.setScore(trex.get(NeuralNetwork.class), ground.getScore());
+                    ns.setScore(trex.get(NeuralNetwork.class), score);
                 }
             }
         }
         return this;
+    }
+
+    public static int getMaxScore()
+    {
+        return maxScore;
     }
 }

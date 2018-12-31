@@ -28,6 +28,7 @@ public class TrexObject extends BaseObject implements Observer
 
     public TrexObject()
     {
+        this((TrexObject trex) -> trex.action);
     }
 
     public TrexObject bind(Object object)
