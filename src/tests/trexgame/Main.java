@@ -66,9 +66,9 @@ public class Main extends Window
         else
             object = new SyncedJSON();
         
-        int numberOfTests = 100;
-        int[] numbersOfIterations = new int[] { 5, 10, 20, 50, 70, 100, 150, 200 };
-        int[] numbersIndividualsPerGeneration = new int[] { 5, 10, 20, 50, 70, 100, 150, 200 };
+        int numberOfTests = 50;
+        int[] numbersOfIterations = new int[] { 5, 10, 20, 50, 70, 100, 150 };
+        int[] numbersIndividualsPerGeneration = new int[] { 5, 10, 20, 50, 70, 100, 150 };
         double[] mutationRates = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5 };
         double[] mutationIntervals = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5, 1, 3, 5 };
         MutationGenerator mg = MutationGenerator.UNIFORM;
