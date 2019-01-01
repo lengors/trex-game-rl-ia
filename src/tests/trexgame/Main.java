@@ -48,6 +48,7 @@ import processing.data.JSONObject;
 
 public class Main extends Window
 {
+    private static Distribution distribution = Distribution.UNIFORM;
     private SyncedJSON object;
     private Loader loader;
 
@@ -61,8 +62,8 @@ public class Main extends Window
     {
         surface.setVisible(false);
         loader = new Loader(this);
-        if (new File("uniform.json").exists())
-            object = new SyncedJSON(loadJSONObject("uniform.json"));
+        if (new File(distribution.filename).exists())
+            object = new SyncedJSON(loadJSONObject(distribution.filename));
         else
             object = new SyncedJSON();
         
@@ -71,7 +72,7 @@ public class Main extends Window
         int[] numbersIndividualsPerGeneration = new int[] { 5, 10, 20, 50, 70, 100, 150 };
         double[] mutationRates = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5 };
         double[] mutationIntervals = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5, 1, 3, 5 };
-        MutationGenerator mg = MutationGenerator.UNIFORM;
+        MutationGenerator mg = distribution.generator;
 
         Executor[] executors = new Executor[mutationRates.length];
         for (int i = 0; i < executors.length; ++i)
@@ -261,6 +262,21 @@ public class Main extends Window
         }
     }
 
+    public static enum Distribution
+    {
+        UNIFORM(MutationGenerator.UNIFORM, "uniform.json"),
+        GAUSSIAN(MutationGenerator.GAUSSIAN, "gaussian.json");
+
+        public String filename;
+        public MutationGenerator generator;
+
+        private Distribution(MutationGenerator mg, String filename)
+        {
+            this.generator = mg;
+            this.filename = filename;
+        }
+    }
+
     public static class Executor extends Thread
     {
         Main window;
@@ -318,7 +334,7 @@ public class Main extends Window
                                 meanScore /= numberOfTests;
                                 System.out.printf("Mean(%f, %d, %d) = %f\n", mutationRate, numberOfIterations, numberIndividualsPerGeneration, meanScore);
                                 mtj.setJSONObject(Double.toString(mutationInterval), (mij = new SyncedJSON().setString("name", "mutationInterval").setDouble("value", meanScore)).getValue());
-                                window.saveSynced(object, "uniform.json");
+                                window.saveSynced(object, Main.distribution.filename);
                             }
                         }
                     }
