@@ -1,9 +1,11 @@
 package tests.trexgame;
 
 import java.util.Map;
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import engine.utils.Synced;
 import engine.utils.Utils;
 
 import engine.graphics.Window;
@@ -46,113 +48,49 @@ import processing.data.JSONObject;
 
 public class Main extends Window
 {
-    private NetworkSelection ns = new NetworkSelection();
-    private Generation generation;
-    private Player player;
+    private SyncedJSON object;
     private Loader loader;
-    private Thread thread;
-    private int ups = 240;
-    private Game game;
 
-    public void newGame()
+    public synchronized void saveSynced(SyncedJSON object, String path)
     {
-        int numberOfTests = 100;
-        int[] numbersOfIterations = new int[] { 5/*, 10, 20, 50, 70, 100, 150, 200*/ };
-        int[] numbersIndividualsPerGeneration = new int[] { 5/*, 10, 20, 50, 70, 100, 150, 200*/ };
-        double[] mutationRates = new double[] { 0.001, 0.003/*, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5*/ };
-        double[] mutationIntervals = new double[] { 0.001, 0.003/*, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5, 1, 3, 5*/ };
-        MutationGenerator mg = MutationGenerator.UNIFORM;
-
-        JSONObject uniformJSON = new JSONObject();
-        for (int numberOfIterations : numbersOfIterations)
-        {
-            JSONObject nij = new JSONObject();
-            nij.setString("name", "numberOfIterations");
-            uniformJSON.setJSONObject(Integer.toString(numberOfIterations), nij);
-            for (int numberIndividualsPerGeneration : numbersIndividualsPerGeneration)
-            {
-                JSONObject ngj = new JSONObject();
-                ngj.setString("name", "numberOfIndividualsPerGeneration");
-                nij.setJSONObject(Integer.toString(numberIndividualsPerGeneration), ngj);
-                for (double mutationRate : mutationRates)
-                {
-                    JSONObject mtj = new JSONObject();
-                    mtj.setString("name", "mutationRate");
-                    ngj.setJSONObject(Double.toString(mutationRate), mtj);
-                    for (double mutationInterval : mutationIntervals)
-                    {
-                        JSONObject mij = new JSONObject();
-                        mij.setString("name", "mutationInterval");
-                        mtj.setJSONObject(Double.toString(mutationInterval), mij);
-                        double meanScore = 0;
-                        for (int i = 0; i < numberOfTests; ++i)
-                        {
-                            int score = newGame(mutationRate, mutationInterval, numberOfIterations, numberIndividualsPerGeneration, mg);
-                            System.out.printf("%f %f %d %d: %03.1f%sComplete!\n", mutationRate, mutationInterval, numberOfIterations, numberIndividualsPerGeneration, i * 100.0 / numberOfTests, "%");
-                            meanScore += score;
-                        }
-                        meanScore /= numberOfTests;
-                        System.out.printf("Mean(%f, %d, %d) = %f\n", mutationRate, numberOfIterations, numberIndividualsPerGeneration, meanScore);
-                        mij.setDouble("value", meanScore);
-                        saveJSONObject(uniformJSON, "uniform.json");
-                    }
-                }
-            }
-        }
-    }
-
-    public int newGame(double mutationRate, double mutationInterval, int numberOfIterations, int numberIndividualsPerGeneration, MutationGenerator mg)
-    {
-        int maxScore = 0;
-        GeneticBehavior gb = new DefaultGeneticBehavior(mg);
-        generation = new Generation(numberIndividualsPerGeneration, mutationRate, mutationInterval, gb);
-        generation.initialize((int index) -> new NeuralNetwork(6, 3).map(Matrix.RANDOMIZE));
-        for (int i = 0; i < numberOfIterations; ++i)
-        {
-
-            game = new TrexGame();
-            game.addResource(ns);
-            game.addResource(loader);
-            game.addResource(Window.class, this);
-
-            Ground ground = new Ground();
-            game.addGameObject(ground);
-
-            for (GeneticInformation gi : generation.information())
-                game.addGameObject(new TrexObject((TrexObject trex) ->
-                {
-                    Obstacle obstacle = ((TrexGame) trex.getGame()).getObstacle();
-                    if (obstacle != null)
-                    {
-                        NeuralNetwork nn = trex.get(NeuralNetwork.class);
-                        PVector position = trex.getPosition();
-                        double[] output = gi.get(Utils.normalize(ground.getSpeed(), trex.getGroundPosition() - position.y, obstacle.getPosition().x - position.x, obstacle.getGroundPosition() - obstacle.getPosition().y, obstacle.getWidth(), obstacle.getHeight()));
-                        int max = Utils.max(output);
-                        if (max == 0)
-                            return (TrexObject.Action) TrexObject::jump;
-                        else if (max == 1)
-                            return (TrexObject.Action) TrexObject::down;
-                    }
-                    return (TrexObject.Action) (TrexObject t) -> { };
-                }).bind(gi));
-
-            game.run();
-            generation = generation.next(ns);
-            ns.clear();
-            if (maxScore < ground.getScore())
-                maxScore = ground.getScore();
-        }
-        return maxScore;
+        saveJSONObject(object.getValue(), path);
     }
 
     @Override
     public void setup()
     {
-        surface.setVisible(true);
+        surface.setVisible(false);
         loader = new Loader(this);
-        newGame();
+        if (new File("uniform.json").exists())
+            object = new SyncedJSON(loadJSONObject("uniform.json"));
+        else
+            object = new SyncedJSON();
+        
+        int numberOfTests = 100;
+        int[] numbersOfIterations = new int[] { 5, 10, 20, 50, 70, 100, 150, 200 };
+        int[] numbersIndividualsPerGeneration = new int[] { 5, 10, 20, 50, 70, 100, 150, 200 };
+        double[] mutationRates = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5 };
+        double[] mutationIntervals = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5, 1, 3, 5 };
+        MutationGenerator mg = MutationGenerator.UNIFORM;
+
+        Executor[] executors = new Executor[mutationRates.length];
+        for (int i = 0; i < executors.length; ++i)
+            executors[i] = new Executor(this, object, loader, numberOfTests, numbersOfIterations, numbersIndividualsPerGeneration, new double[] { mutationRates[i] }, mutationIntervals, mg);
+        for (int i = 1; i < executors.length; ++i)
+            executors[i].start();
+        executors[0].run();
+        for (int i = 1; i < executors.length; ++i)
+            try
+            {
+                executors[i].join();
+            }
+            catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
+
         exit();
-        fill(0);
+        /*fill(0);
 
         addListener(new DefaultListener()
         {
@@ -180,10 +118,10 @@ public class Main extends Window
                     ups = 1;
                 game.setUPS(ups);
             }
-        });
+        });*/
     }
 
-    @Override
+    /*@Override
     public void draw()
     {
         background(255);
@@ -241,12 +179,65 @@ public class Main extends Window
         catch (InterruptedException e)
         {
             throw new RuntimeException(e);
-        }*/
-    }
+        }
+    }*/
 
     public static void main(String[] args)
     {
         Window.build(Main.class, 800, 480).run();
+    }
+
+    public static class SyncedJSON extends Synced<JSONObject>
+    {
+        public SyncedJSON(JSONObject value)
+        {
+            super(value);
+        }
+
+        public SyncedJSON()
+        {
+            this(new JSONObject());
+        }
+
+        public SyncedJSON getJSONObject(String key)
+        {
+            SyncedJSON synced;
+            synchronized (value)
+            {
+                if (value.hasKey(key))
+                    synced = new SyncedJSON(value.getJSONObject(key));
+                else
+                    synced = null;
+            }
+            return synced;
+        }
+
+        public SyncedJSON setDouble(String key, double value)
+        {
+            synchronized (this.value)
+            {
+                this.value.setDouble(key, value);
+            }
+            return this;
+        }
+
+        public SyncedJSON setJSONObject(String key, JSONObject value)
+        {
+            synchronized (this.value)
+            {
+                this.value.setJSONObject(key, value);
+            }
+            return this;
+        }
+
+        public SyncedJSON setString(String key, String value)
+        {
+            synchronized (this.value)
+            {
+                this.value.setString(key, value);
+            }
+            return this;
+        }
     }
 
     public static class NetworkSelection implements SelectiveFunction
@@ -270,30 +261,109 @@ public class Main extends Window
         }
     }
 
-    public static class Player extends DefaultObservable implements KeyListener
+    public static class Executor extends Thread
     {
-        private int keyPressedCode = 0;
+        Main window;
+        Loader loader;
+        SyncedJSON object;
+        int numberOfTests;
+        MutationGenerator mg;
+        double[] mutationRates, mutationIntervals;
+        NetworkSelection ns = new NetworkSelection();
+        int[] numbersOfIterations, numbersIndividualsPerGeneration;
 
-        @Override
-        public void onKeyPress(KeyEvent event)
+        public Executor(Main window, SyncedJSON object, Loader loader, int numberOfTests, int[] numbersOfIterations, int[] numbersIndividualsPerGeneration, double[] mutationRates, double[] mutationIntervals, MutationGenerator mg)
         {
-            if (event.getKeyCode() == java.awt.event.KeyEvent.VK_UP || event.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE)
-                dispatch((TrexObject.Action) TrexObject::jump);
-            else if (event.getKeyCode() == java.awt.event.KeyEvent.VK_DOWN)
-                dispatch((TrexObject.Action) TrexObject::down);
-            else
-                return;
-            keyPressedCode = event.getKeyCode();
+            this.mg = mg;
+            this.loader = loader;
+            this.window = window;
+            this.object = object;
+            this.numberOfTests = numberOfTests;
+            this.mutationRates = mutationRates;
+            this.mutationIntervals = mutationIntervals;
+            this.numbersOfIterations = numbersOfIterations;
+            this.numbersIndividualsPerGeneration = numbersIndividualsPerGeneration;
         }
 
         @Override
-        public void onKeyRelease(KeyEvent event)
+        public void run()
         {
-            if (event.getKeyCode() == keyPressedCode)
+            for (int numberOfIterations : numbersOfIterations)
             {
-                dispatch((TrexObject.Action) (TrexObject trex) -> { });
-                keyPressedCode = 0;
+                SyncedJSON nij = object.getJSONObject(Integer.toString(numberOfIterations));
+                if (nij == null)
+                    object.setJSONObject(Integer.toString(numberOfIterations), (nij = new SyncedJSON().setString("name", "numberOfIterations")).getValue());
+                for (int numberIndividualsPerGeneration : numbersIndividualsPerGeneration)
+                {
+                    SyncedJSON ngj = nij.getJSONObject(Integer.toString(numberIndividualsPerGeneration));
+                    if (ngj == null)
+                        nij.setJSONObject(Integer.toString(numberIndividualsPerGeneration), (ngj = new SyncedJSON().setString("name", "numberOfIndividualsPerGeneration")).getValue());
+                    for (double mutationRate : mutationRates)
+                    {
+                        SyncedJSON mtj = ngj.getJSONObject(Double.toString(mutationRate));
+                        if (mtj == null)
+                            ngj.setJSONObject(Double.toString(mutationRate), (mtj = new SyncedJSON().setString("name", "mutationRate")).getValue());
+                        for (double mutationInterval : mutationIntervals)
+                        {
+                            SyncedJSON mij = mtj.getJSONObject(Double.toString(mutationInterval));
+                            if (mij == null)
+                            {
+                                double meanScore = 0;
+                                for (int i = 0; i < numberOfTests; ++i)
+                                {
+                                    int score = newGame(mutationRate, mutationInterval, numberOfIterations, numberIndividualsPerGeneration, mg);
+                                    System.out.printf("%f %f %d %d: %03.1f%sComplete!\n", mutationRate, mutationInterval, numberOfIterations, numberIndividualsPerGeneration, i * 100.0 / numberOfTests, "%");
+                                    meanScore += score;
+                                }
+                                meanScore /= numberOfTests;
+                                System.out.printf("Mean(%f, %d, %d) = %f\n", mutationRate, numberOfIterations, numberIndividualsPerGeneration, meanScore);
+                                mtj.setJSONObject(Double.toString(mutationInterval), (mij = new SyncedJSON().setString("name", "mutationInterval").setDouble("value", meanScore)).getValue());
+                                window.saveSynced(object, "uniform.json");
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        public int newGame(double mutationRate, double mutationInterval, int numberOfIterations, int numberIndividualsPerGeneration, MutationGenerator mg)
+        {
+            int maxScore = 0;
+            GeneticBehavior gb = new DefaultGeneticBehavior(mg);
+            Generation generation = new Generation(numberIndividualsPerGeneration, mutationRate, mutationInterval, gb);
+            generation.initialize((int index) -> new NeuralNetwork(6, 3).map(Matrix.RANDOMIZE));
+            for (int i = 0; i < numberOfIterations; ++i)
+            {
+                TrexGame game = new TrexGame();
+                game.addResource(ns);
+                game.addResource(loader);
+                game.addResource(Window.class, window);
+                Ground ground = new Ground();
+                game.addGameObject(ground);
+                for (GeneticInformation gi : generation.information())
+                    game.addGameObject(new TrexObject((TrexObject trex) ->
+                    {
+                        Obstacle obstacle = ((TrexGame) trex.getGame()).getObstacle();
+                        if (obstacle != null)
+                        {
+                            NeuralNetwork nn = trex.get(NeuralNetwork.class);
+                            PVector position = trex.getPosition();
+                            double[] output = gi.get(Utils.normalize(ground.getSpeed(), trex.getGroundPosition() - position.y, obstacle.getPosition().x - position.x, obstacle.getGroundPosition() - obstacle.getPosition().y, obstacle.getWidth(), obstacle.getHeight()));
+                            int max = Utils.max(output);
+                            if (max == 0)
+                                return (TrexObject.Action) TrexObject::jump;
+                            else if (max == 1)
+                                return (TrexObject.Action) TrexObject::down;
+                        }
+                        return (TrexObject.Action) (TrexObject t) -> { };
+                    }).bind(gi));
+                game.run();
+                generation = generation.next(ns);
+                ns.clear();
+                if (maxScore < ground.getScore())
+                    maxScore = ground.getScore();
+            }
+            return maxScore;
         }
     }
 }

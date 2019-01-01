@@ -463,87 +463,83 @@
   },
   "name": "numberOfIterations",
   "50": {
-    "0.3": {
-      "name": "mutationRate",
-      "0.001": {
-        "name": "mutationInterval",
-        "value": 283.79
-      },
-      "0.005": {
-        "name": "mutationInterval",
-        "value": 292.6
-      },
-      "0.003": {
-        "name": "mutationInterval",
-        "value": 264.02
-      }
-    },
-    "0.03": {
-      "name": "mutationRate",
-      "0.001": {
-        "name": "mutationInterval",
-        "value": 200.17
-      },
-      "0.005": {
-        "name": "mutationInterval",
-        "value": 187.1
-      },
-      "0.003": {
-        "name": "mutationInterval",
-        "value": 197.41
-      }
-    },
     "name": "numberOfIndividualsPerGeneration",
     "0.001": {
-      "name": "mutationRate",
       "0.001": {
         "name": "mutationInterval",
-        "value": 145.48
+        "value": 130.36
+      },
+      "0.01": {
+        "name": "mutationInterval",
+        "value": 125.27
       },
       "0.005": {
         "name": "mutationInterval",
-        "value": 170.72
+        "value": 119.25
       },
       "0.003": {
         "name": "mutationInterval",
-        "value": 178.36
-      }
-    },
-    "0.01": {
-      "name": "mutationRate",
-      "0.001": {
-        "name": "mutationInterval",
-        "value": 193.7
+        "value": 121.16
       },
-      "0.005": {
+      "0.1": {
         "name": "mutationInterval",
-        "value": 181.06
+        "value": 125.49
       },
-      "0.003": {
+      "1.0": {
         "name": "mutationInterval",
-        "value": 169.51
-      }
-    },
-    "0.005": {
-      "name": "mutationRate",
-      "0.001": {
-        "name": "mutationInterval",
-        "value": 190.05
+        "value": 125.68
       },
-      "0.003": {
+      "0.05": {
         "name": "mutationInterval",
-        "value": 172.14
-      }
+        "value": 115.48
+      },
+      "0.3": {
+        "name": "mutationInterval",
+        "value": 130.09
+      },
+      "3.0": {
+        "name": "mutationInterval",
+        "value": 130.5
+      },
+      "0.03": {
+        "name": "mutationInterval",
+        "value": 125.26
+      },
+      "0.5": {
+        "name": "mutationInterval",
+        "value": 137.61
+      },
+      "5.0": {
+        "name": "mutationInterval",
+        "value": 134.33
+      },
+      "name": "mutationRate"
     },
     "0.003": {
+      "0.05": {
+        "name": "mutationInterval",
+        "value": 115.11
+      },
+      "0.03": {
+        "name": "mutationInterval",
+        "value": 137.04
+      },
       "name": "mutationRate",
       "0.001": {
         "name": "mutationInterval",
-        "value": 151.71
+        "value": 126.18
+      },
+      "0.01": {
+        "name": "mutationInterval",
+        "value": 129.64
+      },
+      "0.005": {
+        "name": "mutationInterval",
+        "value": 133.35
       },
       "0.003": {
         "name": "mutationInterval",
-        "value": 163.27
+        "value": 126.62
       }
     }
   },
