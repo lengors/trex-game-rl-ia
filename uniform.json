@@ -1,0 +1,28 @@
+{"5": {
+  "5": {
+    "name": "numberOfIndividualsPerGeneration",
+    "0.001": {
+      "name": "mutationRate",
+      "0.001": {
+        "name": "mutationInterval",
+        "value": 106.86
+      },
+      "0.003": {
+        "name": "mutationInterval",
+        "value": 103.15
+      }
+    },
+    "0.003": {
+      "name": "mutationRate",
+      "0.001": {
+        "name": "mutationInterval",
+        "value": 102.53
+      },
+      "0.003": {
+        "name": "mutationInterval",
+        "value": 97.81
+      }
+    }
+  },
+  "name": "numberOfIterations"
+}}

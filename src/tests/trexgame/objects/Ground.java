@@ -37,7 +37,7 @@ public class Ground extends ShapedObject
     @Override
     public void update()
     {
-        inScore += (speed + 5) * getGame().getUpsNS() * 1e-9;
+        inScore += (speed + 5) * 0.017;
         score = (int) Math.floor(inScore);
         position.x -= speed;
         if (position.x <= -getTexture().width / 2)

@@ -49,6 +49,8 @@ public class MainState extends GameState
                     ns.setScore(trex.get(NeuralNetwork.class), score);
                 }
             }
+            if (trexs.size() == 0)
+                return null;
         }
         return this;
     }

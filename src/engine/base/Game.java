@@ -356,19 +356,19 @@ public class Game extends DefaultListener implements Runnable
 
         while (gameState != null && running)
         {
-            long now = System.nanoTime();
+            /*long now = System.nanoTime();
             delta += (now - lastTime) / upsNS;
             while (delta >= 1)
-            {
+            {*/
                 gameState = gameState.update();
-                synchronized (gameObjects)
-                {
+                /*synchronized (gameObjects)
+                {*/
                     for (GameObject gameObject : gameObjects)
                         gameObject.update();
-                }
+                /*}
                 --delta;
             }
-            lastTime = now;
+            lastTime = now;*/
         }
     }
 

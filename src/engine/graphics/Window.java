@@ -190,6 +190,12 @@ public class Window extends PApplet implements InputListener
         return this;
     }
 
+    public Window run()
+    {
+        PApplet.runSketch(new String[] { getClass().getName() }, this);
+        return this;
+    }
+
     public static Window build(Class<? extends Window> clazz, int width, int height, String renderer)
     {
         return new Builder(clazz, width, height, renderer).build();
@@ -251,9 +257,7 @@ public class Window extends PApplet implements InputListener
             {
                 Constructor<? extends Window> windowConstructor = windowClass.getConstructor();
                 Window window = windowConstructor.newInstance();
-                window.addListener(window);
-                PApplet.runSketch(new String[] { windowClass.getName() }, window.setBuilder(this));
-                return window;
+                return window.addListener(window).setBuilder(this);
             }
             catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 			        | IllegalArgumentException | InvocationTargetException e)
