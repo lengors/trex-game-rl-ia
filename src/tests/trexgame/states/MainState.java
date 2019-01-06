@@ -22,7 +22,8 @@ public class MainState extends GameState
     {
         Ground ground = getGame().getGameObjects(Ground.class).get(0);
         int score = ground.getScore();
-        if (maxScore < score)
+        boolean newMaxScore;
+        if (newMaxScore = maxScore < score)
             maxScore = score;
         List<Obstacle> obstacles = getGame().getGameObjects(Obstacle.class);
         int counter = obstacles.size();

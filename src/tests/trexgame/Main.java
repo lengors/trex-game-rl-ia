@@ -2,6 +2,7 @@ package tests.trexgame;
 
 import java.util.Map;
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -57,21 +58,80 @@ public class Main extends Window
         saveJSONObject(object.getValue(), path);
     }
 
+    public NeuralNetwork loadBest()
+    {
+        JSONArray array = loadJSONArray("best.json");
+        Matrix[] weights = new Matrix[array.size()];
+        for (int i = 0; i < array.size(); ++i)
+        {
+            JSONObject json = array.getJSONObject(i);
+            int width = json.getInt("width");
+            int height = json.getHeight("height");
+            Matrix matrix = new Matrix(height, width);
+            JSONArray data = json.getJSONArray("data");
+            for (int j = 0; j < data.size(); ++j)
+                matrix.set(j, data.getDouble(j));
+            weights[i] = matrix;
+        }
+        return new NeuralNetwork(weights);
+    }
+
+    public TrexGame newGameBest()
+    {
+        TrexGame game = new TrexGame();
+        game.addResource(ns);
+        game.addResource(loader);
+        game.addResource(Window.class, window);
+        Ground ground = new Ground();
+        game.addGameObject(ground);
+        game.addGameObject(new TrexObject((TrexObject trex) ->
+        {
+            Obstacle obstacle = ((TrexGame) trex.getGame()).getObstacle();
+            if (obstacle != null)
+            {
+                NeuralNetwork nn = trex.get(NeuralNetwork.class);
+                PVector position = trex.getPosition();
+                double[] output = gi.get(Utils.normalize(ground.getSpeed(), trex.getGroundPosition() - position.y, obstacle.getPosition().x - position.x, obstacle.getGroundPosition() - obstacle.getPosition().y, obstacle.getWidth(), obstacle.getHeight()));
+                int max = Utils.max(output);
+                if (max == 0)
+                    return (TrexObject.Action) TrexObject::jump;
+                else if (max == 1)
+                    return (TrexObject.Action) TrexObject::down;
+            }
+            return (TrexObject.Action) (TrexObject t) -> { };
+        }).bind(loadBest()));
+    }
+
+    public double testBest()
+    {
+        double sum = 0;
+        int nTests = 15;
+        for (int i = 0; i < nTests; ++i)
+        {
+            TrexGame game = newGameBest();
+            game.run();
+            sum += game.getGameObjects(Ground.class).get(0).getScore();
+        }
+        return sum / nTests;
+    }
+
     @Override
     public void setup()
     {
         surface.setVisible(false);
         loader = new Loader(this);
-        if (new File(distribution.filename).exists())
+        
+        // Code used for training:
+        /*if (new File(distribution.filename).exists())
             object = new SyncedJSON(loadJSONObject(distribution.filename));
         else
             object = new SyncedJSON();
         
         int numberOfTests = 50;
-        int[] numbersOfIterations = new int[] { 5, 10, 20, 50, 70, 100, 150 };
-        int[] numbersIndividualsPerGeneration = new int[] { 5, 10, 20, 50, 70, 100, 150 };
-        double[] mutationRates = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5 };
-        double[] mutationIntervals = new double[] { 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5, 1, 3, 5 };
+        int[] numbersOfIterations = new int[] { 50 };
+        int[] numbersIndividualsPerGeneration = new int[] { 150 };
+        double[] mutationRates = new double[] { 0.3 };
+        double[] mutationIntervals = new double[] { 5 };
         MutationGenerator mg = distribution.generator;
 
         Executor[] executors = new Executor[mutationRates.length];
@@ -88,29 +148,17 @@ public class Main extends Window
             catch (InterruptedException e)
             {
                 throw new RuntimeException(e);
-            }
+            }*/
 
+        double x = testBest();
+        PrintWriter pw = new PrintWriter("score-test.txt");
+        pw.println(x);
+        
         exit();
         /*fill(0);
 
         addListener(new DefaultListener()
         {
-            @Override
-            public void onKeyPress(KeyEvent event)
-            {
-                if (event.getKeyCode() == 's' || event.getKeyCode() == 'S')
-                {
-                    GeneticInformation[] infos = generation.information();
-                    for (int i = 0; i < infos.length; ++i)
-                    {
-                        System.out.printf("NN %d:\n", i);
-                        System.out.println(infos[i]);
-                    }
-                }
-                else if (event.getKeyCode() == 'm' || event.getKeyCode() == 'M')
-                    System.out.println(MainState.getMaxScore());
-            }
-
             @Override
             public void onMouseWheel(MouseEvent event)
             {
@@ -322,27 +370,27 @@ public class Main extends Window
                         for (double mutationInterval : mutationIntervals)
                         {
                             SyncedJSON mij = mtj.getJSONObject(Double.toString(mutationInterval));
-                            if (mij == null)
-                            {
+                            // if (mij == null)
+                            // {
                                 double meanScore = 0;
                                 for (int i = 0; i < numberOfTests; ++i)
                                 {
-                                    int score = newGame(mutationRate, mutationInterval, numberOfIterations, numberIndividualsPerGeneration, mg);
+                                    int score = newGame(mutationRate, mutationInterval, numberOfIterations, numberIndividualsPerGeneration, mg, window);
                                     System.out.printf("%f %f %d %d: %03.1f%sComplete!\n", mutationRate, mutationInterval, numberOfIterations, numberIndividualsPerGeneration, i * 100.0 / numberOfTests, "%");
                                     meanScore += score;
                                 }
                                 meanScore /= numberOfTests;
                                 System.out.printf("Mean(%f, %d, %d) = %f\n", mutationRate, numberOfIterations, numberIndividualsPerGeneration, meanScore);
                                 mtj.setJSONObject(Double.toString(mutationInterval), (mij = new SyncedJSON().setString("name", "mutationInterval").setDouble("value", meanScore)).getValue());
-                                window.saveSynced(object, Main.distribution.filename);
-                            }
+                                // window.saveSynced(object, Main.distribution.filename);
+                            // }
                         }
                     }
                 }
             }
         }
 
-        public int newGame(double mutationRate, double mutationInterval, int numberOfIterations, int numberIndividualsPerGeneration, MutationGenerator mg)
+        public int newGame(double mutationRate, double mutationInterval, int numberOfIterations, int numberIndividualsPerGeneration, MutationGenerator mg, Main window)
         {
             int maxScore = 0;
             GeneticBehavior gb = new DefaultGeneticBehavior(mg);
@@ -374,10 +422,32 @@ public class Main extends Window
                         return (TrexObject.Action) (TrexObject t) -> { };
                     }).bind(gi));
                 game.run();
+                if (maxScore < ground.getScore())
+                {
+                    maxScore = ground.getScore();
+                    Map.Entry<GeneticInformation, Integer> maxEntry = null;
+                    for (Map.Entry<GeneticInformation, Integer> entry : ns.scores.entrySet())
+                        if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
+                            maxEntry = entry;
+                    NeuralNetwork nn = (NeuralNetwork) maxEntry.getKey();
+                    Matrix[] weights = nn.get();
+
+                    JSONArray array = new JSONArray();
+                    for (Matrix matrix : weights)
+                    {
+                        JSONObject json = new JSONObject();
+                        json.setInt("height", matrix.getHeight());
+                        json.setInt("width", matrix.getWidth());
+                        JSONArray data = new JSONArray();
+                        for (int a = 0; a < matrix.size(); ++a)
+                            data.append(matrix.get(a));
+                        json.setJSONArray("data", data);
+                        array.append(json);
+                    }
+                    window.saveJSONArray(array, "best.json");
+                }
                 generation = generation.next(ns);
                 ns.clear();
-                if (maxScore < ground.getScore())
-                    maxScore = ground.getScore();
             }
             return maxScore;
         }

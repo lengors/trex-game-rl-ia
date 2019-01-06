@@ -8,6 +8,12 @@ public class NeuralNetwork implements GeneticInformation
 {
     private Matrix.Map activationFunction;
     private Matrix[] weights;
+
+    public NeuralNetwork(Matrix[] weights)
+    {
+        activationFunction = (double weight) -> 1. / (1. + Math.exp(-weight));
+        this.weights = weights;
+    }
     
     public NeuralNetwork(Matrix.Map activationFunction, int... layers)
     {
