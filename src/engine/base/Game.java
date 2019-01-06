@@ -217,6 +217,8 @@ public class Game extends DefaultListener implements Runnable
         synchronized (resources)
         {
             List<Object> list = resources.get(resourcesClass);
+            if (list == null)
+                list = new ArrayList<>();
             result = new ArrayList<>(list.size());
             for (Object object : list)
                 result.add((T) object);

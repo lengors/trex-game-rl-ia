@@ -2,6 +2,7 @@ package tests.trexgame;
 
 import java.util.Map;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class Main extends Window
         {
             JSONObject json = array.getJSONObject(i);
             int width = json.getInt("width");
-            int height = json.getHeight("height");
+            int height = json.getInt("height");
             Matrix matrix = new Matrix(height, width);
             JSONArray data = json.getJSONArray("data");
             for (int j = 0; j < data.size(); ++j)
@@ -79,11 +80,11 @@ public class Main extends Window
     public TrexGame newGameBest()
     {
         TrexGame game = new TrexGame();
-        game.addResource(ns);
         game.addResource(loader);
-        game.addResource(Window.class, window);
+        game.addResource(Window.class, this);
         Ground ground = new Ground();
         game.addGameObject(ground);
+        NeuralNetwork gi = loadBest();
         game.addGameObject(new TrexObject((TrexObject trex) ->
         {
             Obstacle obstacle = ((TrexGame) trex.getGame()).getObstacle();
@@ -99,7 +100,8 @@ public class Main extends Window
                     return (TrexObject.Action) TrexObject::down;
             }
             return (TrexObject.Action) (TrexObject t) -> { };
-        }).bind(loadBest()));
+        }).bind(gi));
+        return game;
     }
 
     public double testBest()
@@ -110,7 +112,9 @@ public class Main extends Window
         {
             TrexGame game = newGameBest();
             game.run();
-            sum += game.getGameObjects(Ground.class).get(0).getScore();
+            int score = game.getGameObjects(Ground.class).get(0).getScore();
+            System.out.println(score);
+            sum += score;
         }
         return sum / nTests;
     }
@@ -127,7 +131,7 @@ public class Main extends Window
         else
             object = new SyncedJSON();
         
-        int numberOfTests = 50;
+        int numberOfTests = 100;
         int[] numbersOfIterations = new int[] { 50 };
         int[] numbersIndividualsPerGeneration = new int[] { 150 };
         double[] mutationRates = new double[] { 0.3 };
@@ -151,9 +155,17 @@ public class Main extends Window
             }*/
 
         double x = testBest();
-        PrintWriter pw = new PrintWriter("score-test.txt");
-        pw.println(x);
-        
+        System.out.println(x);
+        try
+        {
+            PrintWriter pw = new PrintWriter("score-test.txt");
+            pw.println(x);
+            pw.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
         exit();
         /*fill(0);
 
@@ -427,7 +439,7 @@ public class Main extends Window
                     maxScore = ground.getScore();
                     Map.Entry<GeneticInformation, Integer> maxEntry = null;
                     for (Map.Entry<GeneticInformation, Integer> entry : ns.scores.entrySet())
-                        if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
+                        if (maxEntry == null || entry.getValue() == maxScore)
                             maxEntry = entry;
                     NeuralNetwork nn = (NeuralNetwork) maxEntry.getKey();
                     Matrix[] weights = nn.get();

@@ -39,7 +39,7 @@ public class MainState extends GameState
         if (obstacles.size() > 0)
         {
             Obstacle obstacle = obstacles.get(0);
-            NetworkSelection ns = getGame().getResource(NetworkSelection.class);
+            List<NetworkSelection> nss = getGame().getResources(NetworkSelection.class);
             List<TrexObject> trexs = getGame().getGameObjects(TrexObject.class);
             for (int i = 0; i < trexs.size(); ++i)
             {
@@ -47,7 +47,8 @@ public class MainState extends GameState
                 if (trex.collides(obstacle))
                 {
                     getGame().removeGameObject(trex);
-                    ns.setScore(trex.get(NeuralNetwork.class), score);
+                    if (nss.size() > 0)
+                        nss.get(0).setScore(trex.get(NeuralNetwork.class), score);
                 }
             }
             if (trexs.size() == 0)
