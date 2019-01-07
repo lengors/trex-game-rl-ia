@@ -59,66 +59,6 @@ public class Main extends Window
         saveJSONObject(object.getValue(), path);
     }
 
-    public NeuralNetwork loadBest()
-    {
-        JSONArray array = loadJSONArray("best.json");
-        Matrix[] weights = new Matrix[array.size()];
-        for (int i = 0; i < array.size(); ++i)
-        {
-            JSONObject json = array.getJSONObject(i);
-            int width = json.getInt("width");
-            int height = json.getInt("height");
-            Matrix matrix = new Matrix(height, width);
-            JSONArray data = json.getJSONArray("data");
-            for (int j = 0; j < data.size(); ++j)
-                matrix.set(j, data.getDouble(j));
-            weights[i] = matrix;
-        }
-        return new NeuralNetwork(weights);
-    }
-
-    public TrexGame newGameBest()
-    {
-        TrexGame game = new TrexGame();
-        game.addResource(loader);
-        game.addResource(Window.class, this);
-        Ground ground = new Ground();
-        game.addGameObject(ground);
-        NeuralNetwork gi = loadBest();
-        game.addGameObject(new TrexObject((TrexObject trex) ->
-        {
-            Obstacle obstacle = ((TrexGame) trex.getGame()).getObstacle();
-            if (obstacle != null)
-            {
-                NeuralNetwork nn = trex.get(NeuralNetwork.class);
-                PVector position = trex.getPosition();
-                double[] output = gi.get(Utils.normalize(ground.getSpeed(), trex.getGroundPosition() - position.y, obstacle.getPosition().x - position.x, obstacle.getGroundPosition() - obstacle.getPosition().y, obstacle.getWidth(), obstacle.getHeight()));
-                int max = Utils.max(output);
-                if (max == 0)
-                    return (TrexObject.Action) TrexObject::jump;
-                else if (max == 1)
-                    return (TrexObject.Action) TrexObject::down;
-            }
-            return (TrexObject.Action) (TrexObject t) -> { };
-        }).bind(gi));
-        return game;
-    }
-
-    public double testBest()
-    {
-        double sum = 0;
-        int nTests = 15;
-        for (int i = 0; i < nTests; ++i)
-        {
-            TrexGame game = newGameBest();
-            game.run();
-            int score = game.getGameObjects(Ground.class).get(0).getScore();
-            System.out.println(score);
-            sum += score;
-        }
-        return sum / nTests;
-    }
-
     @Override
     public void setup()
     {
@@ -126,7 +66,7 @@ public class Main extends Window
         loader = new Loader(this);
         
         // Code used for training:
-        /*if (new File(distribution.filename).exists())
+        if (new File(distribution.filename).exists())
             object = new SyncedJSON(loadJSONObject(distribution.filename));
         else
             object = new SyncedJSON();
@@ -152,20 +92,8 @@ public class Main extends Window
             catch (InterruptedException e)
             {
                 throw new RuntimeException(e);
-            }*/
+            }
 
-        double x = testBest();
-        System.out.println(x);
-        try
-        {
-            PrintWriter pw = new PrintWriter("score-test.txt");
-            pw.println(x);
-            pw.close();
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
         exit();
         /*fill(0);
 
